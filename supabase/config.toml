@@ -1,1 +1,7 @@
 project_id = "jlvoebgwzsoghycumjuj"
+
+[functions.manage-subscription]
+verify_jwt = true
+
+[functions.send-device-command]
+verify_jwt = true

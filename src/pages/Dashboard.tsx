@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { User } from "@supabase/supabase-js";
 import Navbar from "@/components/Navbar";
 import DeviceCard from "@/components/DeviceCard";
+import AddDeviceDialog from "@/components/AddDeviceDialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Plus, Search } from "lucide-react";
@@ -117,10 +118,7 @@ const Dashboard = () => {
                 Manage and monitor your mobile DVR devices
               </p>
             </div>
-            <Button className="gap-2 shadow-glow">
-              <Plus className="w-4 h-4" />
-              Add Device
-            </Button>
+            <AddDeviceDialog onDeviceAdded={() => fetchDevices(user!.id)} />
           </div>
 
           <div className="mb-6">
@@ -140,10 +138,7 @@ const Dashboard = () => {
               <p className="text-muted-foreground mb-4">
                 {searchQuery ? "No devices found matching your search" : "No devices yet"}
               </p>
-              <Button variant="outline" className="gap-2">
-                <Plus className="w-4 h-4" />
-                Add Your First Device
-              </Button>
+              <AddDeviceDialog onDeviceAdded={() => fetchDevices(user!.id)} />
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
