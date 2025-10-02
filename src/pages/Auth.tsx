@@ -62,7 +62,7 @@ const Auth = () => {
         <CardHeader className="space-y-1">
           <div className="flex items-center justify-center mb-4">
             <div className="w-12 h-12 rounded-lg bg-primary/20 flex items-center justify-center">
-              <Radio className="w-6 h-6 text-primary" />
+              <img src='logo.jpg' ></img>
             </div>
           </div>
           <CardTitle className="text-2xl text-center">FleetStream Control</CardTitle>
