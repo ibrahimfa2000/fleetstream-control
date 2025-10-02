@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/components/Navbar";
+import StreamPlayer from "@/components/StreamPlayer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -268,24 +269,16 @@ const DeviceDetail = () => {
                   </TabsContent>
 
                   <TabsContent value="stream" className="mt-6">
-                    {stream ? (
-                      <div className="space-y-4">
-                        <div className="aspect-video bg-secondary/30 rounded-lg flex items-center justify-center">
-                          <div className="text-center">
-                            <Video className="w-12 h-12 text-primary mx-auto mb-3" />
-                            <p className="text-sm text-muted-foreground">Stream Viewer</p>
-                            <p className="text-xs text-muted-foreground mt-1">
-                              {stream.stream_url || "Stream URL not configured"}
-                            </p>
-                          </div>
-                        </div>
-                        <Button className="w-full gap-2">
-                          <PlayCircle className="w-4 h-4" />
-                          Start Live Stream
-                        </Button>
-                      </div>
+                    {stream && stream.stream_url ? (
+                      <StreamPlayer 
+                        streamUrl={stream.stream_url} 
+                        streamType={stream.stream_type}
+                      />
                     ) : (
-                      <p className="text-muted-foreground text-center py-8">No stream configured</p>
+                      <div className="text-center py-8">
+                        <Video className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
+                        <p className="text-muted-foreground">No stream configured</p>
+                      </div>
                     )}
                   </TabsContent>
 
