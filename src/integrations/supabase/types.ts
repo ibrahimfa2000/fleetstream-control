@@ -14,7 +14,198 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      devices: {
+        Row: {
+          created_at: string | null
+          firmware_version: string | null
+          id: string
+          imei: string
+          last_seen: string | null
+          model: string | null
+          name: string
+          owner_id: string | null
+          sim_iccid: string
+          status: Database["public"]["Enums"]["device_status"] | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          firmware_version?: string | null
+          id?: string
+          imei: string
+          last_seen?: string | null
+          model?: string | null
+          name: string
+          owner_id?: string | null
+          sim_iccid: string
+          status?: Database["public"]["Enums"]["device_status"] | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          firmware_version?: string | null
+          id?: string
+          imei?: string
+          last_seen?: string | null
+          model?: string | null
+          name?: string
+          owner_id?: string | null
+          sim_iccid?: string
+          status?: Database["public"]["Enums"]["device_status"] | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string | null
+          email: string | null
+          id: string
+          role: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          email?: string | null
+          id: string
+          role?: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          email?: string | null
+          id?: string
+          role?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      streams: {
+        Row: {
+          created_at: string | null
+          device_id: string
+          id: string
+          last_active: string | null
+          stream_type: string | null
+          stream_url: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          device_id: string
+          id?: string
+          last_active?: string | null
+          stream_type?: string | null
+          stream_url?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          device_id?: string
+          id?: string
+          last_active?: string | null
+          stream_type?: string | null
+          stream_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "streams_device_id_fkey"
+            columns: ["device_id"]
+            isOneToOne: false
+            referencedRelation: "devices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      subscriptions: {
+        Row: {
+          created_at: string | null
+          device_id: string
+          end_at: string | null
+          id: string
+          plan_id: string | null
+          sim_iccid: string
+          start_at: string | null
+          status: Database["public"]["Enums"]["subscription_status"] | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          device_id: string
+          end_at?: string | null
+          id?: string
+          plan_id?: string | null
+          sim_iccid: string
+          start_at?: string | null
+          status?: Database["public"]["Enums"]["subscription_status"] | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          device_id?: string
+          end_at?: string | null
+          id?: string
+          plan_id?: string | null
+          sim_iccid?: string
+          start_at?: string | null
+          status?: Database["public"]["Enums"]["subscription_status"] | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subscriptions_device_id_fkey"
+            columns: ["device_id"]
+            isOneToOne: false
+            referencedRelation: "devices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      telemetry: {
+        Row: {
+          battery_level: number | null
+          created_at: string | null
+          data_usage_mb: number | null
+          device_id: string
+          gps_lat: number | null
+          gps_lon: number | null
+          id: string
+          signal_strength: number | null
+          storage_free_mb: number | null
+          timestamp: string | null
+        }
+        Insert: {
+          battery_level?: number | null
+          created_at?: string | null
+          data_usage_mb?: number | null
+          device_id: string
+          gps_lat?: number | null
+          gps_lon?: number | null
+          id?: string
+          signal_strength?: number | null
+          storage_free_mb?: number | null
+          timestamp?: string | null
+        }
+        Update: {
+          battery_level?: number | null
+          created_at?: string | null
+          data_usage_mb?: number | null
+          device_id?: string
+          gps_lat?: number | null
+          gps_lon?: number | null
+          id?: string
+          signal_strength?: number | null
+          storage_free_mb?: number | null
+          timestamp?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "telemetry_device_id_fkey"
+            columns: ["device_id"]
+            isOneToOne: false
+            referencedRelation: "devices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -23,7 +214,8 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      device_status: "online" | "offline" | "maintenance"
+      subscription_status: "active" | "suspended" | "cancelled"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +342,9 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      device_status: ["online", "offline", "maintenance"],
+      subscription_status: ["active", "suspended", "cancelled"],
+    },
   },
 } as const
