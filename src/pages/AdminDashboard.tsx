@@ -31,12 +31,11 @@ const AdminDashboard = () => {
   const fetchAllDevices = async () => {
     try {
       // Admin can see all devices
-      // @ts-ignore - Types will be generated after migration
-      const { data: devicesData, error: devicesError } = await (supabase as any)
+      const { data: devicesData, error: devicesError } = await supabase
         .from("devices")
         .select(`
           *,
-          owner:owner_id (
+          owner:profiles!devices_owner_id_fkey (
             email
           )
         `)
