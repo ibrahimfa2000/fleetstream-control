@@ -17,13 +17,13 @@ export const useUserRole = () => {
         }
 
         // @ts-ignore - Types will be generated after migration
-        const { data: profile } = await (supabase as any)
-          .from('profiles')
+        const { data: userRole } = await (supabase as any)
+          .from('user_roles')
           .select('role')
-          .eq('id', user.id)
-          .single();
+          .eq('user_id', user.id)
+          .maybeSingle();
 
-        setRole(profile?.role || 'customer');
+        setRole(userRole?.role || 'customer');
       } catch (error) {
         console.error('Error fetching user role:', error);
         setRole('customer');

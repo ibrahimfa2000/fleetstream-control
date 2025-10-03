@@ -48,17 +48,30 @@ const StreamPlayer = ({ streamUrl, streamType }: StreamPlayerProps) => {
   };
 
   if (isRTSP) {
+    // Try to embed using VLC web plugin or provide direct stream access
+    const vlcEmbedUrl = streamUrl.replace('rtsp://', 'http://'); // Attempt HTTP fallback
+    
     return (
       <div className="space-y-4">
         <Alert>
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>
-            RTSP streams cannot be played directly in browsers. Please convert to HLS (HTTP Live Streaming) 
-            format or use a media server like Wowza, nginx-rtmp, or ffmpeg to transcode the stream.
+            RTSP streams require server-side transcoding to HLS/WebRTC for browser playback. 
+            Configure your DVR to provide an HLS (.m3u8) stream URL for best compatibility.
           </AlertDescription>
         </Alert>
-        <div className="aspect-video bg-secondary/30 rounded-lg flex items-center justify-center">
-          <p className="text-muted-foreground text-sm">RTSP: {streamUrl}</p>
+        <div className="aspect-video bg-black rounded-lg overflow-hidden relative">
+          <iframe
+            src={streamUrl}
+            className="w-full h-full"
+            allow="autoplay; fullscreen"
+            title="RTSP Stream"
+            onError={() => setError("Unable to load RTSP stream directly. Please configure HLS streaming on your DVR.")}
+          />
+          <div className="absolute bottom-4 left-4 right-4 bg-black/70 p-3 rounded text-xs text-white">
+            <p className="font-mono break-all">{streamUrl}</p>
+            <p className="mt-1 text-white/70">Configure your camera/DVR to output HLS for browser playback</p>
+          </div>
         </div>
       </div>
     );

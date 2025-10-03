@@ -1,0 +1,6 @@
+-- Ensure RLS is enabled on all tables
+ALTER TABLE public.devices ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.streams ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.subscriptions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.telemetry ENABLE ROW LEVEL SECURITY;
