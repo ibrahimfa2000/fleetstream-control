@@ -1,0 +1,53 @@
+{
+  "nav": {
+    "myDevices": "המכשירים שלי",
+    "admin": "מנהל",
+    "signOut": "התנתק"
+  },
+  "auth": {
+    "title": "GISION",
+    "signInSubtitle": "התחבר לפלטפורמת ניהול MDVR שלך",
+    "signUpSubtitle": "צור חשבון GISION שלך",
+    "email": "אימייל",
+    "emailPlaceholder": "you@example.com",
+    "password": "סיסמה",
+    "passwordPlaceholder": "••••••••",
+    "signIn": "התחבר",
+    "signUp": "הירשם",
+    "noAccount": "אין לך חשבון? הירשם",
+    "hasAccount": "כבר יש לך חשבון? התחבר",
+    "signInSuccess": "התחברת בהצלחה!",
+    "checkEmail": "בדוק את האימייל שלך לקישור האישור!"
+  },
+  "dashboard": {
+    "title": "ניהול מכשירי GISION",
+    "subtitle": "עקוב ונהל את מכשירי ה-MDVR שלך",
+    "searchPlaceholder": "חפש מכשירים לפי IMEI או שם...",
+    "addDevice": "הוסף מכשיר",
+    "noDevices": "לא נמצאו מכשירים",
+    "noDevicesDesc": "התחל על ידי הוספת מכשיר GISION הראשון שלך"
+  },
+  "admin": {
+    "title": "לוח בקרה למנהל",
+    "subtitle": "נהל את כל המכשירים וגישת המשתמשים",
+    "allDevices": "כל המכשירים"
+  },
+  "device": {
+    "status": {
+      "online": "מחובר",
+      "offline": "מנותק"
+    },
+    "owner": "בעלים",
+    "imei": "IMEI",
+    "simCard": "כרטיס SIM",
+    "subscription": "מנוי",
+    "subscriptionEnd": "סיום מנוי",
+    "activeUntil": "פעיל עד",
+    "viewDetails": "הצג פרטים"
+  },
+  "notFound": {
+    "title": "404",
+    "message": "אופס! הדף לא נמצא",
+    "returnHome": "חזור לדף הבית"
+  }
+}

@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Search, Shield } from "lucide-react";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -15,6 +16,7 @@ const AdminDashboard = () => {
   const [devices, setDevices] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
+  const { t } = useTranslation();
 
   useEffect(() => {
     if (roleLoading) return;
@@ -107,13 +109,13 @@ const AdminDashboard = () => {
             <div>
               <div className="flex items-center gap-3 mb-2">
                 <Shield className="w-8 h-8 text-primary" />
-                <h2 className="text-3xl font-bold">Admin Dashboard</h2>
+                <h2 className="text-3xl font-bold">{t('admin.title')}</h2>
                 <Badge variant="outline" className="bg-primary/20 text-primary border-primary/30">
-                  All Devices
+                  {t('admin.allDevices')}
                 </Badge>
               </div>
               <p className="text-muted-foreground">
-                Monitor and manage all DVR devices across all customers
+                {t('admin.subtitle')}
               </p>
             </div>
           </div>
@@ -122,7 +124,7 @@ const AdminDashboard = () => {
             <div className="relative max-w-md">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
-                placeholder="Search by device name, IMEI, or owner email..."
+                placeholder={t('dashboard.searchPlaceholder')}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-10 bg-card/50 border-border"
@@ -133,7 +135,7 @@ const AdminDashboard = () => {
           {filteredDevices.length === 0 ? (
             <div className="text-center py-16">
               <p className="text-muted-foreground mb-4">
-                {searchQuery ? "No devices found matching your search" : "No devices in system"}
+                {searchQuery ? t('dashboard.noDevices') : t('dashboard.noDevicesDesc')}
               </p>
             </div>
           ) : (

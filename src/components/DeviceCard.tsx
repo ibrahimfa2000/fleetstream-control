@@ -3,6 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Radio, Signal, Battery, HardDrive, MapPin } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import { useTranslation } from "react-i18next";
 
 interface DeviceCardProps {
   device: {
@@ -28,6 +29,8 @@ interface DeviceCardProps {
 }
 
 const DeviceCard = ({ device, telemetry, subscription, onClick }: DeviceCardProps) => {
+  const { t } = useTranslation();
+  
   const getStatusColor = (status: string) => {
     switch (status) {
       case "online":
@@ -66,7 +69,7 @@ const DeviceCard = ({ device, telemetry, subscription, onClick }: DeviceCardProp
             </div>
           </div>
           <Badge variant="outline" className={getStatusColor(device.status)}>
-            {device.status}
+            {t(`device.status.${device.status}`)}
           </Badge>
         </div>
 
@@ -119,7 +122,7 @@ const DeviceCard = ({ device, telemetry, subscription, onClick }: DeviceCardProp
             )}
           </div>
           <Button variant="outline" size="sm" onClick={onClick} className="hover:bg-primary/10 hover:text-primary border-primary/30">
-            View Details →
+            {t('device.viewDetails')} →
           </Button>
         </div>
       </CardContent>

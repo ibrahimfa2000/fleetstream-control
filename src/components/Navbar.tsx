@@ -4,11 +4,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useUserRole } from "@/hooks/useUserRole";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
+import LanguageSwitcher from "./LanguageSwitcher";
 
 const Navbar = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { isAdmin } = useUserRole();
+  const { t } = useTranslation();
 
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut();
@@ -45,7 +48,7 @@ const Navbar = () => {
                 size="sm"
                 onClick={() => navigate("/")}
               >
-                My Devices
+                {t('nav.myDevices')}
               </Button>
               <Button
                 variant={location.pathname === "/admin" ? "default" : "ghost"}
@@ -54,15 +57,18 @@ const Navbar = () => {
                 className="gap-2"
               >
                 <Shield className="w-4 h-4" />
-                Admin
+                {t('nav.admin')}
               </Button>
             </div>
           )}
         </div>
-        <Button variant="ghost" size="sm" onClick={handleLogout} className="gap-2">
-          <LogOut className="w-4 h-4" />
-          Sign Out
-        </Button>
+        <div className="flex items-center gap-2">
+          <LanguageSwitcher />
+          <Button variant="ghost" size="sm" onClick={handleLogout} className="gap-2">
+            <LogOut className="w-4 h-4" />
+            {t('nav.signOut')}
+          </Button>
+        </div>
       </div>
     </nav>
   );

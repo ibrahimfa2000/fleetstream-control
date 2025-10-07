@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Plus, Search } from "lucide-react";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 
 const Dashboard = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -16,6 +17,7 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -113,9 +115,9 @@ const Dashboard = () => {
         <main className="container mx-auto px-4 py-8">
           <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between mb-8">
             <div>
-              <h2 className="text-3xl font-bold mb-2 text-foreground">GISION Fleet Control</h2>
+              <h2 className="text-3xl font-bold mb-2 text-foreground">{t('dashboard.title')}</h2>
               <p className="text-muted-foreground">
-                Manage and monitor your MDVR devices in real-time
+                {t('dashboard.subtitle')}
               </p>
             </div>
             <AddDeviceDialog onDeviceAdded={() => fetchDevices(user!.id)} />
@@ -125,7 +127,7 @@ const Dashboard = () => {
             <div className="relative max-w-md">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
-                placeholder="Search GISION devices by name or IMEI..."
+                placeholder={t('dashboard.searchPlaceholder')}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-10 bg-card/50 border-primary/20 focus:border-primary/40"
@@ -136,7 +138,7 @@ const Dashboard = () => {
           {filteredDevices.length === 0 ? (
             <div className="text-center py-16">
               <p className="text-muted-foreground mb-4">
-                {searchQuery ? "No devices found matching your search" : "No devices yet"}
+                {searchQuery ? t('dashboard.noDevices') : t('dashboard.noDevicesDesc')}
               </p>
               <AddDeviceDialog onDeviceAdded={() => fetchDevices(user!.id)} />
             </div>
