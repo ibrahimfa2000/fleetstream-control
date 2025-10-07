@@ -21,16 +21,21 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="border-b border-border/50 bg-card/30 backdrop-blur-md sticky top-0 z-50">
+    <nav className="border-b border-primary/20 bg-gradient-secondary shadow-elegant sticky top-0 z-50 backdrop-blur-sm">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
         <div className="flex items-center gap-6">
-          <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigate("/")}>
-            <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center">
-              <Radio className="w-5 h-5 text-primary" />
+          <div className="flex items-center gap-3 cursor-pointer group" onClick={() => navigate("/")}>
+            <img 
+              src="/logo.jpg" 
+              alt="GISION Logo" 
+              className="h-10 w-10 object-contain transition-transform group-hover:scale-110"
+            />
+            <div className="flex flex-col">
+              <h1 className="text-xl font-bold text-primary tracking-wide">
+                GISION
+              </h1>
+              <span className="text-xs text-muted-foreground">MDVR Management Platform</span>
             </div>
-            <h1 className="text-xl font-bold bg-gradient-to-r from-foreground to-primary bg-clip-text text-transparent">
-              FleetStream Control
-            </h1>
           </div>
           
           {isAdmin && (

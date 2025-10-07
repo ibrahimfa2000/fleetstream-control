@@ -96,26 +96,26 @@ const Dashboard = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-background via-background to-secondary/20">
+      <div className="min-h-screen bg-gradient-dark">
         <Navbar />
         <div className="container mx-auto px-4 py-8 flex items-center justify-center">
-          <p className="text-muted-foreground">Loading devices...</p>
+          <p className="text-muted-foreground">Loading GISION devices...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-secondary/20">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_30%,rgba(6,182,212,0.1),transparent_50%)]" />
+    <div className="min-h-screen bg-gradient-dark">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_30%,rgba(213,175,55,0.08),transparent_60%)]" />
       <div className="relative">
         <Navbar />
         <main className="container mx-auto px-4 py-8">
           <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between mb-8">
             <div>
-              <h2 className="text-3xl font-bold mb-2">Fleet Overview</h2>
+              <h2 className="text-3xl font-bold mb-2 text-foreground">GISION Fleet Control</h2>
               <p className="text-muted-foreground">
-                Manage and monitor your mobile DVR devices
+                Manage and monitor your MDVR devices in real-time
               </p>
             </div>
             <AddDeviceDialog onDeviceAdded={() => fetchDevices(user!.id)} />
@@ -125,10 +125,10 @@ const Dashboard = () => {
             <div className="relative max-w-md">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
-                placeholder="Search devices by name or IMEI..."
+                placeholder="Search GISION devices by name or IMEI..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 bg-card/50 border-border"
+                className="pl-10 bg-card/50 border-primary/20 focus:border-primary/40"
               />
             </div>
           </div>

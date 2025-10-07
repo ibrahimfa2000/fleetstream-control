@@ -55,25 +55,27 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-secondary/20 p-4">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(6,182,212,0.1),transparent_50%)]" />
+    <div className="min-h-screen flex items-center justify-center bg-gradient-dark p-4">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(213,175,55,0.08),transparent_60%)]" />
       
-      <Card className="w-full max-w-md relative border-border/50 shadow-card backdrop-blur-sm">
+      <Card className="w-full max-w-md relative border-primary/20 shadow-elegant backdrop-blur-sm bg-gradient-secondary">
         <CardHeader className="space-y-1">
           <div className="flex items-center justify-center mb-4">
-            <div className="w-12 h-12 rounded-lg bg-primary/20 flex items-center justify-center">
-              <img src='logo.jpg' ></img>
-            </div>
+            <img 
+              src="/logo.jpg" 
+              alt="GISION Logo" 
+              className="h-20 w-20 object-contain"
+            />
           </div>
-          <CardTitle className="text-2xl text-center">FleetStream Control</CardTitle>
-          <CardDescription className="text-center">
-            {isLogin ? "Sign in to manage your fleet" : "Create an account to get started"}
+          <CardTitle className="text-3xl text-center text-primary font-bold">GISION</CardTitle>
+          <CardDescription className="text-center text-muted-foreground">
+            {isLogin ? "Sign in to your MDVR Management Platform" : "Create your GISION account"}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleAuth} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email" className="text-foreground">Email</Label>
               <Input
                 id="email"
                 type="email"
@@ -81,11 +83,11 @@ const Auth = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="bg-secondary/50 border-border"
+                className="bg-background/50 border-primary/20 focus:border-primary/40"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password" className="text-foreground">Password</Label>
               <Input
                 id="password"
                 type="password"
@@ -94,7 +96,7 @@ const Auth = () => {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 minLength={6}
-                className="bg-secondary/50 border-border"
+                className="bg-background/50 border-primary/20 focus:border-primary/40"
               />
             </div>
             <Button type="submit" className="w-full" disabled={loading}>
@@ -105,7 +107,7 @@ const Auth = () => {
           <div className="mt-4 text-center text-sm">
             <button
               onClick={() => setIsLogin(!isLogin)}
-              className="text-primary hover:underline"
+              className="text-primary hover:text-accent transition-colors"
             >
               {isLogin ? "Don't have an account? Sign up" : "Already have an account? Sign in"}
             </button>
