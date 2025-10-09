@@ -45,6 +45,54 @@
     "activeUntil": "Active until",
     "viewDetails": "View Details"
   },
+  "deviceDetail": {
+    "loading": "Loading device...",
+    "errorLoading": "Error loading device",
+    "backToDashboard": "Back to Dashboard",
+    "tabs": {
+      "overview": "Overview",
+      "telemetry": "Telemetry",
+      "stream": "Stream",
+      "control": "Control"
+    },
+    "fields": {
+      "model": "Model",
+      "firmware": "Firmware",
+      "simIccid": "SIM ICCID",
+      "lastSeen": "Last Seen",
+      "never": "Never"
+    },
+    "telemetry": {
+      "signal": "Signal",
+      "battery": "Battery",
+      "storage": "Storage",
+      "location": "Location",
+      "free": "free",
+      "gpsMap": "GPS Location Map",
+      "noData": "No telemetry data available"
+    },
+    "stream": {
+      "noStream": "No stream configured"
+    },
+    "control": {
+      "reboot": "Reboot",
+      "startRecording": "Start Recording",
+      "stopRecording": "Stop Recording",
+      "updateConfig": "Update Config"
+    },
+    "subscription": {
+      "title": "Subscription Control",
+      "status": "Status",
+      "plan": "Plan",
+      "suspend": "Suspend Subscription",
+      "activate": "Activate Subscription",
+      "noSubscription": "No subscription found"
+    },
+    "subscriptionSuccess": "Subscription {{action}}d successfully!",
+    "subscriptionError": "Failed to {{action}} subscription",
+    "commandSuccess": "Command \"{{command}}\" sent successfully!",
+    "commandError": "Failed to send command"
+  },
   "notFound": {
     "title": "404",
     "message": "Oops! Page not found",

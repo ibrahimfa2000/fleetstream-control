@@ -45,6 +45,54 @@
     "activeUntil": "نشط حتى",
     "viewDetails": "عرض التفاصيل"
   },
+  "deviceDetail": {
+    "loading": "جاري تحميل الجهاز...",
+    "errorLoading": "خطأ في تحميل الجهاز",
+    "backToDashboard": "العودة إلى لوحة التحكم",
+    "tabs": {
+      "overview": "نظرة عامة",
+      "telemetry": "القياس عن بعد",
+      "stream": "البث",
+      "control": "التحكم"
+    },
+    "fields": {
+      "model": "الطراز",
+      "firmware": "البرنامج الثابت",
+      "simIccid": "معرف بطاقة SIM",
+      "lastSeen": "آخر ظهور",
+      "never": "أبداً"
+    },
+    "telemetry": {
+      "signal": "الإشارة",
+      "battery": "البطارية",
+      "storage": "التخزين",
+      "location": "الموقع",
+      "free": "متاح",
+      "gpsMap": "خريطة موقع GPS",
+      "noData": "لا توجد بيانات قياس متاحة"
+    },
+    "stream": {
+      "noStream": "لم يتم تكوين البث"
+    },
+    "control": {
+      "reboot": "إعادة التشغيل",
+      "startRecording": "بدء التسجيل",
+      "stopRecording": "إيقاف التسجيل",
+      "updateConfig": "تحديث التكوين"
+    },
+    "subscription": {
+      "title": "إدارة الاشتراك",
+      "status": "الحالة",
+      "plan": "الخطة",
+      "suspend": "تعليق الاشتراك",
+      "activate": "تفعيل الاشتراك",
+      "noSubscription": "لم يتم العثور على اشتراك"
+    },
+    "subscriptionSuccess": "تم {{action}} الاشتراك بنجاح!",
+    "subscriptionError": "فشل في {{action}} الاشتراك",
+    "commandSuccess": "تم إرسال الأمر \"{{command}}\" بنجاح!",
+    "commandError": "فشل في إرسال الأمر"
+  },
   "notFound": {
     "title": "404",
     "message": "عذراً! الصفحة غير موجودة",

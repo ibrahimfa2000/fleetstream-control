@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/components/Navbar";
 import StreamPlayer from "@/components/StreamPlayer";
+import GPSMap from "@/components/GPSMap";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -13,10 +14,12 @@ import {
   PlayCircle, PauseCircle, Power, RotateCcw, Video, Terminal
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import { useTranslation } from "react-i18next";
 
 const DeviceDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [device, setDevice] = useState<any>(null);
   const [telemetry, setTelemetry] = useState<any>(null);
   const [subscription, setSubscription] = useState<any>(null);
@@ -76,7 +79,7 @@ const DeviceDetail = () => {
       setStream(streamData);
 
     } catch (error: any) {
-      toast.error("Error loading device: " + error.message);
+      toast.error(t('deviceDetail.errorLoading') + ": " + error.message);
       navigate("/");
     } finally {
       setLoading(false);
@@ -100,10 +103,10 @@ const DeviceDetail = () => {
 
       if (response.error) throw response.error;
 
-      toast.success(`Subscription ${action}d successfully!`);
+      toast.success(t('deviceDetail.subscriptionSuccess', { action }));
       fetchDeviceData();
     } catch (error: any) {
-      toast.error(`Failed to ${action} subscription: ` + error.message);
+      toast.error(t('deviceDetail.subscriptionError', { action }) + ": " + error.message);
     } finally {
       setActionLoading(false);
     }
@@ -126,9 +129,9 @@ const DeviceDetail = () => {
 
       if (response.error) throw response.error;
 
-      toast.success(`Command "${command}" sent successfully!`);
+      toast.success(t('deviceDetail.commandSuccess', { command }));
     } catch (error: any) {
-      toast.error("Failed to send command: " + error.message);
+      toast.error(t('deviceDetail.commandError') + ": " + error.message);
     } finally {
       setActionLoading(false);
     }
@@ -139,7 +142,7 @@ const DeviceDetail = () => {
       <div className="min-h-screen bg-gradient-to-br from-background via-background to-secondary/20">
         <Navbar />
         <div className="container mx-auto px-4 py-8 flex items-center justify-center">
-          <p className="text-muted-foreground">Loading device...</p>
+          <p className="text-muted-foreground">{t('deviceDetail.loading')}</p>
         </div>
       </div>
     );
@@ -167,7 +170,7 @@ const DeviceDetail = () => {
             className="mb-6 gap-2"
           >
             <ArrowLeft className="w-4 h-4" />
-            Back to Dashboard
+            {t('deviceDetail.backToDashboard')}
           </Button>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -187,84 +190,99 @@ const DeviceDetail = () => {
                     </div>
                   </div>
                   <Badge variant="outline" className={getStatusColor(device.status)}>
-                    {device.status}
+                    {t(`device.status.${device.status}`)}
                   </Badge>
                 </div>
               </CardHeader>
               <CardContent>
                 <Tabs defaultValue="overview" className="w-full">
                   <TabsList className="grid w-full grid-cols-4">
-                    <TabsTrigger value="overview">Overview</TabsTrigger>
-                    <TabsTrigger value="telemetry">Telemetry</TabsTrigger>
-                    <TabsTrigger value="stream">Stream</TabsTrigger>
-                    <TabsTrigger value="control">Control</TabsTrigger>
+                    <TabsTrigger value="overview">{t('deviceDetail.tabs.overview')}</TabsTrigger>
+                    <TabsTrigger value="telemetry">{t('deviceDetail.tabs.telemetry')}</TabsTrigger>
+                    <TabsTrigger value="stream">{t('deviceDetail.tabs.stream')}</TabsTrigger>
+                    <TabsTrigger value="control">{t('deviceDetail.tabs.control')}</TabsTrigger>
                   </TabsList>
 
                   <TabsContent value="overview" className="space-y-4 mt-6">
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <p className="text-sm text-muted-foreground">Model</p>
+                        <p className="text-sm text-muted-foreground">{t('deviceDetail.fields.model')}</p>
                         <p className="font-medium">{device.model || "N/A"}</p>
                       </div>
                       <div>
-                        <p className="text-sm text-muted-foreground">Firmware</p>
+                        <p className="text-sm text-muted-foreground">{t('deviceDetail.fields.firmware')}</p>
                         <p className="font-medium">{device.firmware_version || "N/A"}</p>
                       </div>
                       <div>
-                        <p className="text-sm text-muted-foreground">SIM ICCID</p>
+                        <p className="text-sm text-muted-foreground">{t('deviceDetail.fields.simIccid')}</p>
                         <p className="font-medium text-xs">{device.sim_iccid}</p>
                       </div>
                       <div>
-                        <p className="text-sm text-muted-foreground">Last Seen</p>
+                        <p className="text-sm text-muted-foreground">{t('deviceDetail.fields.lastSeen')}</p>
                         <p className="font-medium text-xs">
                           {device.last_seen 
                             ? formatDistanceToNow(new Date(device.last_seen), { addSuffix: true })
-                            : "Never"}
+                            : t('deviceDetail.fields.never')}
                         </p>
                       </div>
                     </div>
                   </TabsContent>
 
-                  <TabsContent value="telemetry" className="mt-6">
+                  <TabsContent value="telemetry" className="mt-6 space-y-6">
                     {telemetry ? (
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="flex items-center gap-3 p-4 rounded-lg bg-secondary/30">
-                          <Signal className="w-5 h-5 text-primary" />
-                          <div>
-                            <p className="text-sm text-muted-foreground">Signal</p>
-                            <p className="font-semibold">{telemetry.signal_strength} dBm</p>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-3 p-4 rounded-lg bg-secondary/30">
-                          <Battery className="w-5 h-5 text-primary" />
-                          <div>
-                            <p className="text-sm text-muted-foreground">Battery</p>
-                            <p className="font-semibold">{telemetry.battery_level}%</p>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-3 p-4 rounded-lg bg-secondary/30">
-                          <HardDrive className="w-5 h-5 text-primary" />
-                          <div>
-                            <p className="text-sm text-muted-foreground">Storage</p>
-                            <p className="font-semibold">
-                              {Math.round(telemetry.storage_free_mb / 1024)} GB free
-                            </p>
-                          </div>
-                        </div>
-                        {telemetry.gps_lat && telemetry.gps_lon && (
+                      <>
+                        <div className="grid grid-cols-2 gap-4">
                           <div className="flex items-center gap-3 p-4 rounded-lg bg-secondary/30">
-                            <MapPin className="w-5 h-5 text-primary" />
+                            <Signal className="w-5 h-5 text-primary" />
                             <div>
-                              <p className="text-sm text-muted-foreground">Location</p>
-                              <p className="font-semibold text-xs">
-                                {telemetry.gps_lat.toFixed(4)}, {telemetry.gps_lon.toFixed(4)}
+                              <p className="text-sm text-muted-foreground">{t('deviceDetail.telemetry.signal')}</p>
+                              <p className="font-semibold">{telemetry.signal_strength} dBm</p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-3 p-4 rounded-lg bg-secondary/30">
+                            <Battery className="w-5 h-5 text-primary" />
+                            <div>
+                              <p className="text-sm text-muted-foreground">{t('deviceDetail.telemetry.battery')}</p>
+                              <p className="font-semibold">{telemetry.battery_level}%</p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-3 p-4 rounded-lg bg-secondary/30">
+                            <HardDrive className="w-5 h-5 text-primary" />
+                            <div>
+                              <p className="text-sm text-muted-foreground">{t('deviceDetail.telemetry.storage')}</p>
+                              <p className="font-semibold">
+                                {Math.round(telemetry.storage_free_mb / 1024)} GB {t('deviceDetail.telemetry.free')}
                               </p>
                             </div>
                           </div>
+                          {telemetry.gps_lat && telemetry.gps_lon && (
+                            <div className="flex items-center gap-3 p-4 rounded-lg bg-secondary/30">
+                              <MapPin className="w-5 h-5 text-primary" />
+                              <div>
+                                <p className="text-sm text-muted-foreground">{t('deviceDetail.telemetry.location')}</p>
+                                <p className="font-semibold text-xs">
+                                  {telemetry.gps_lat.toFixed(4)}, {telemetry.gps_lon.toFixed(4)}
+                                </p>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                        {telemetry.gps_lat && telemetry.gps_lon && (
+                          <div>
+                            <h4 className="text-sm font-medium mb-3 flex items-center gap-2">
+                              <MapPin className="w-4 h-4 text-primary" />
+                              {t('deviceDetail.telemetry.gpsMap')}
+                            </h4>
+                            <GPSMap 
+                              latitude={telemetry.gps_lat} 
+                              longitude={telemetry.gps_lon}
+                              deviceName={device.name}
+                            />
+                          </div>
                         )}
-                      </div>
+                      </>
                     ) : (
-                      <p className="text-muted-foreground text-center py-8">No telemetry data available</p>
+                      <p className="text-muted-foreground text-center py-8">{t('deviceDetail.telemetry.noData')}</p>
                     )}
                   </TabsContent>
 
@@ -277,7 +295,7 @@ const DeviceDetail = () => {
                     ) : (
                       <div className="text-center py-8">
                         <Video className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
-                        <p className="text-muted-foreground">No stream configured</p>
+                        <p className="text-muted-foreground">{t('deviceDetail.stream.noStream')}</p>
                       </div>
                     )}
                   </TabsContent>
@@ -291,7 +309,7 @@ const DeviceDetail = () => {
                         className="gap-2"
                       >
                         <RotateCcw className="w-4 h-4" />
-                        Reboot
+                        {t('deviceDetail.control.reboot')}
                       </Button>
                       <Button
                         variant="outline"
@@ -300,7 +318,7 @@ const DeviceDetail = () => {
                         className="gap-2"
                       >
                         <PlayCircle className="w-4 h-4" />
-                        Start Recording
+                        {t('deviceDetail.control.startRecording')}
                       </Button>
                       <Button
                         variant="outline"
@@ -309,7 +327,7 @@ const DeviceDetail = () => {
                         className="gap-2"
                       >
                         <PauseCircle className="w-4 h-4" />
-                        Stop Recording
+                        {t('deviceDetail.control.stopRecording')}
                       </Button>
                       <Button
                         variant="outline"
@@ -318,7 +336,7 @@ const DeviceDetail = () => {
                         className="gap-2"
                       >
                         <Terminal className="w-4 h-4" />
-                        Update Config
+                        {t('deviceDetail.control.updateConfig')}
                       </Button>
                     </div>
                   </TabsContent>
@@ -330,13 +348,13 @@ const DeviceDetail = () => {
             <div className="space-y-6">
               <Card className="bg-card/50 backdrop-blur-sm border-border/50">
                 <CardHeader>
-                  <CardTitle className="text-lg">Subscription Control</CardTitle>
+                  <CardTitle className="text-lg">{t('deviceDetail.subscription.title')}</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {subscription && (
                     <>
                       <div className="flex items-center justify-between">
-                        <span className="text-sm text-muted-foreground">Status</span>
+                        <span className="text-sm text-muted-foreground">{t('deviceDetail.subscription.status')}</span>
                         <Badge variant="outline" className={
                           subscription.status === 'active' 
                             ? "bg-success/20 text-success border-success/30"
@@ -346,7 +364,7 @@ const DeviceDetail = () => {
                         </Badge>
                       </div>
                       <div className="flex items-center justify-between">
-                        <span className="text-sm text-muted-foreground">Plan</span>
+                        <span className="text-sm text-muted-foreground">{t('deviceDetail.subscription.plan')}</span>
                         <span className="font-medium">{subscription.plan_id || "Basic"}</span>
                       </div>
                       <div className="pt-4 space-y-2">
@@ -358,7 +376,7 @@ const DeviceDetail = () => {
                             disabled={actionLoading}
                           >
                             <PauseCircle className="w-4 h-4" />
-                            Suspend Subscription
+                            {t('deviceDetail.subscription.suspend')}
                           </Button>
                         ) : (
                           <Button
@@ -367,7 +385,7 @@ const DeviceDetail = () => {
                             disabled={actionLoading}
                           >
                             <Power className="w-4 h-4" />
-                            Activate Subscription
+                            {t('deviceDetail.subscription.activate')}
                           </Button>
                         )}
                       </div>
@@ -375,7 +393,7 @@ const DeviceDetail = () => {
                   )}
                   {!subscription && (
                     <p className="text-sm text-muted-foreground text-center py-4">
-                      No subscription found
+                      {t('deviceDetail.subscription.noSubscription')}
                     </p>
                   )}
                 </CardContent>

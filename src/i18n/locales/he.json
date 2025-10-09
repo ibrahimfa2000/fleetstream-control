@@ -45,6 +45,54 @@
     "activeUntil": "פעיל עד",
     "viewDetails": "הצג פרטים"
   },
+  "deviceDetail": {
+    "loading": "טוען מכשיר...",
+    "errorLoading": "שגיאה בטעינת מכשיר",
+    "backToDashboard": "חזרה ללוח הבקרה",
+    "tabs": {
+      "overview": "סקירה כללית",
+      "telemetry": "טלמטריה",
+      "stream": "שידור",
+      "control": "בקרה"
+    },
+    "fields": {
+      "model": "דגם",
+      "firmware": "קושחה",
+      "simIccid": "מזהה SIM",
+      "lastSeen": "נראה לאחרונה",
+      "never": "אף פעם"
+    },
+    "telemetry": {
+      "signal": "איתות",
+      "battery": "סוללה",
+      "storage": "אחסון",
+      "location": "מיקום",
+      "free": "פנוי",
+      "gpsMap": "מפת מיקום GPS",
+      "noData": "אין נתוני טלמטריה זמינים"
+    },
+    "stream": {
+      "noStream": "לא מוגדר שידור"
+    },
+    "control": {
+      "reboot": "אתחול מחדש",
+      "startRecording": "התחל הקלטה",
+      "stopRecording": "עצור הקלטה",
+      "updateConfig": "עדכן תצורה"
+    },
+    "subscription": {
+      "title": "ניהול מנוי",
+      "status": "סטטוס",
+      "plan": "תוכנית",
+      "suspend": "השעה מנוי",
+      "activate": "הפעל מנוי",
+      "noSubscription": "לא נמצא מנוי"
+    },
+    "subscriptionSuccess": "המנוי {{action}} בהצלחה!",
+    "subscriptionError": "נכשל ל{{action}} מנוי",
+    "commandSuccess": "הפקודה \"{{command}}\" נשלחה בהצלחה!",
+    "commandError": "נכשל לשלוח פקודה"
+  },
   "notFound": {
     "title": "404",
     "message": "אופס! הדף לא נמצא",
