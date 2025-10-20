@@ -36,7 +36,7 @@ serve(async (req) => {
 
     const { deviceId, command, params } = await req.json();
     
-    console.log(`[GISION] User ${user.email} sending command to device ${deviceId}: ${command}`);
+    console.log(`[M-Z] User ${user.email} sending command to device ${deviceId}: ${command}`);
 
     // Verify device ownership or admin role
     const { data: device, error: deviceError } = await supabaseClient
@@ -64,8 +64,8 @@ serve(async (req) => {
       throw new Error('Unauthorized: You do not have permission to control this device');
     }
 
-    // Build MQTT command payload for GISION MDVR
-    const mqttTopic = `gision/devices/${device.imei}/commands`;
+    // Build MQTT command payload for M-Z MDVR
+    const mqttTopic = `M-Z/devices/${device.imei}/commands`;
     const commandPayload: CommandPayload = {
       type: command,
       params: params || {},
@@ -73,12 +73,12 @@ serve(async (req) => {
       requestId: crypto.randomUUID()
     };
 
-    console.log(`[GISION] Publishing command to MQTT topic: ${mqttTopic}`, commandPayload);
+    console.log(`[M-Z] Publishing command to MQTT topic: ${mqttTopic}`, commandPayload);
     
     // In production, publish to actual MQTT broker
     // Example: await mqttClient.publish(mqttTopic, JSON.stringify(commandPayload))
     
-    // For supported GISION MDVR commands:
+    // For supported M-Z MDVR commands:
     // - reboot: Restart device
     // - start_recording: Start video recording
     // - stop_recording: Stop video recording  
@@ -88,12 +88,12 @@ serve(async (req) => {
     // - configure_channels: Configure recording channels
 
     // Log command in database for audit trail
-    console.log(`[GISION] Command sent successfully: ${command} to ${device.name} (${device.imei})`);
+    console.log(`[M-Z] Command sent successfully: ${command} to ${device.name} (${device.imei})`);
 
     return new Response(
       JSON.stringify({
         success: true,
-        message: `Command "${command}" sent to GISION device successfully`,
+        message: `Command "${command}" sent to M-Z device successfully`,
         device: {
           id: device.id,
           name: device.name,
@@ -113,7 +113,7 @@ serve(async (req) => {
     );
 
   } catch (error) {
-    console.error('[GISION] Error in device control:', error);
+    console.error('[M-Z] Error in device control:', error);
     return new Response(
       JSON.stringify({ 
         error: (error as Error).message || 'Internal server error',

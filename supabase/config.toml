@@ -9,11 +9,11 @@ verify_jwt = true
 [functions.mqtt-handler]
 verify_jwt = false
 
-[functions.gision-telemetry-sync]
+[functions.M-Z-telemetry-sync]
 verify_jwt = false
 
-[functions.gision-stream-manager]
+[functions.M-Z-stream-manager]
 verify_jwt = false
 
-[functions.gision-device-control]
+[functions.M-Z-device-control]
 verify_jwt = true

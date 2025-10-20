@@ -19,7 +19,7 @@ const Navbar = () => {
       toast.error("Error signing out");
     } else {
       toast.success("Signed out successfully");
-      navigate("/auth");
+      navigate("/");
     }
   };
 
@@ -30,12 +30,12 @@ const Navbar = () => {
           <div className="flex items-center gap-3 cursor-pointer group" onClick={() => navigate("/")}>
             <img 
               src="/logo.jpg" 
-              alt="GISION Logo" 
+              alt="M-Z Logo" 
               className="h-10 w-10 object-contain transition-transform group-hover:scale-110"
             />
             <div className="flex flex-col">
               <h1 className="text-xl font-bold text-primary tracking-wide">
-                GISION
+                M-Z
               </h1>
               <span className="text-xs text-muted-foreground">MDVR Management Platform</span>
             </div>

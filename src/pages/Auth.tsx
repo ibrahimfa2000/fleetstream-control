@@ -21,7 +21,7 @@ const Auth = () => {
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
-        navigate("/");
+        navigate("/dashboard");
       }
     });
   }, [navigate]);
@@ -38,7 +38,7 @@ const Auth = () => {
         });
         if (error) throw error;
         toast.success(t('auth.signInSuccess'));
-        navigate("/");
+        navigate("/dashboard");
       } else {
         const { error } = await supabase.auth.signUp({
           email,
@@ -70,7 +70,7 @@ const Auth = () => {
           <div className="flex items-center justify-center mb-4">
             <img 
               src="/logo.jpg" 
-              alt="GISION Logo" 
+              alt="M-Z Logo" 
               className="h-20 w-20 object-contain"
             />
           </div>

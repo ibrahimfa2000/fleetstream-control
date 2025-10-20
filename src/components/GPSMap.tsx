@@ -48,7 +48,7 @@ const GPSMap = ({ latitude, longitude, deviceName }: GPSMapProps) => {
         .setPopup(
           new mapboxgl.Popup({ offset: 25 }).setHTML(
             `<div style="padding: 8px; color: #231F20;">
-              <strong style="color: #D4AF37;">${deviceName || 'GISION Device'}</strong><br/>
+              <strong style="color: #D4AF37;">${deviceName || 'M-Z Device'}</strong><br/>
               <span style="font-size: 12px;">Lat: ${latitude.toFixed(6)}</span><br/>
               <span style="font-size: 12px;">Lng: ${longitude.toFixed(6)}</span>
             </div>`

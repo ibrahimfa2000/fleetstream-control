@@ -101,7 +101,7 @@ const Dashboard = () => {
       <div className="min-h-screen bg-gradient-dark">
         <Navbar />
         <div className="container mx-auto px-4 py-8 flex items-center justify-center">
-          <p className="text-muted-foreground">Loading GISION devices...</p>
+          <p className="text-muted-foreground">Loading M-Z devices...</p>
         </div>
       </div>
     );
