@@ -30,12 +30,12 @@ const Navbar = () => {
           <div className="flex items-center gap-3 cursor-pointer group" onClick={() => navigate("/")}>
             <img 
               src="/logo.jpg" 
-              alt="M-Z Logo" 
+              alt="ApexAuto Logo" 
               className="h-10 w-10 object-contain transition-transform group-hover:scale-110"
             />
             <div className="flex flex-col">
               <h1 className="text-xl font-bold text-primary tracking-wide">
-                M-Z
+                ApexAuto
               </h1>
               <span className="text-xs text-muted-foreground">MDVR Management Platform</span>
             </div>

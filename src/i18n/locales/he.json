@@ -95,9 +95,9 @@
       "visitUs": "בקר אותנו"
   },
   "auth": {
-    "title": "M-Z",
+    "title": "ApexAuto",
     "signInSubtitle": "התחבר לפלטפורמת ניהול MDVR שלך",
-    "signUpSubtitle": "צור חשבון M-Z שלך",
+    "signUpSubtitle": "צור חשבון ApexAuto שלך",
     "email": "אימייל",
     "emailPlaceholder": "you@example.com",
     "password": "סיסמה",
@@ -110,12 +110,12 @@
     "checkEmail": "בדוק את האימייל שלך לקישור האישור!"
   },
   "dashboard": {
-    "title": "ניהול מכשירי M-Z",
+    "title": "ניהול מכשירי ApexAuto",
     "subtitle": "עקוב ונהל את מכשירי ה-MDVR שלך",
     "searchPlaceholder": "חפש מכשירים לפי IMEI או שם...",
     "addDevice": "הוסף מכשיר",
     "noDevices": "לא נמצאו מכשירים",
-    "noDevicesDesc": "התחל על ידי הוספת מכשיר M-Z הראשון שלך"
+    "noDevicesDesc": "התחל על ידי הוספת מכשיר ApexAuto הראשון שלך"
   },
   "admin": {
     "title": "לוח בקרה למנהל",

@@ -169,8 +169,8 @@ const Contact = () => {
                   </div>
                   <div>
                     <div className="text-sm text-muted-foreground mb-1">{t('LandingPage.emailUs')}</div>
-                    <a href="mailto:info@M-Z.com" className="text-foreground hover:text-primary transition-colors text-lg font-semibold">
-                      info@m-z.com
+                    <a href="mailto:info@ApexAuto.com" className="text-foreground hover:text-primary transition-colors text-lg font-semibold">
+                      info@ApexAuto.com
                     </a>
                   </div>
                 </div>

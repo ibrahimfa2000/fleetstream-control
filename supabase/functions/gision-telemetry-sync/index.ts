@@ -19,7 +19,7 @@ serve(async (req) => {
 
     const { imei, telemetry } = await req.json();
     
-    console.log(`[M-Z] Processing telemetry for device IMEI: ${imei}`);
+    console.log(`[ApexAuto] Processing telemetry for device IMEI: ${imei}`);
 
     // Find device by IMEI
     const { data: device, error: deviceError } = await supabaseClient
@@ -29,7 +29,7 @@ serve(async (req) => {
       .single();
 
     if (deviceError || !device) {
-      console.error(`[M-Z] Device not found: ${imei}`, deviceError);
+      console.error(`[ApexAuto] Device not found: ${imei}`, deviceError);
       throw new Error('Device not found');
     }
 
@@ -50,7 +50,7 @@ serve(async (req) => {
       .insert(telemetryData);
 
     if (telemetryError) {
-      console.error('[M-Z] Error inserting telemetry:', telemetryError);
+      console.error('[ApexAuto] Error inserting telemetry:', telemetryError);
       throw telemetryError;
     }
 
@@ -64,10 +64,10 @@ serve(async (req) => {
       .eq('id', device.id);
 
     if (updateError) {
-      console.error('[M-Z] Error updating device:', updateError);
+      console.error('[ApexAuto] Error updating device:', updateError);
     }
 
-    console.log(`[M-Z] Telemetry processed successfully for device ${imei}`);
+    console.log(`[ApexAuto] Telemetry processed successfully for device ${imei}`);
 
     return new Response(
       JSON.stringify({
@@ -82,7 +82,7 @@ serve(async (req) => {
     );
 
   } catch (error) {
-    console.error('[M-Z] Error in telemetry sync:', error);
+    console.error('[ApexAuto] Error in telemetry sync:', error);
     return new Response(
       JSON.stringify({ 
         error: (error as Error).message || 'Internal server error',

@@ -19,7 +19,7 @@ serve(async (req) => {
 
     const { imei, stream_url, stream_type, action } = await req.json();
     
-    console.log(`[M-Z] Stream ${action} for device IMEI: ${imei}`);
+    console.log(`[ApexAuto] Stream ${action} for device IMEI: ${imei}`);
 
     // Find device by IMEI
     const { data: device, error: deviceError } = await supabaseClient
@@ -29,7 +29,7 @@ serve(async (req) => {
       .single();
 
     if (deviceError || !device) {
-      console.error(`[M-Z] Device not found: ${imei}`, deviceError);
+      console.error(`[ApexAuto] Device not found: ${imei}`, deviceError);
       throw new Error('Device not found');
     }
 
@@ -49,11 +49,11 @@ serve(async (req) => {
         .single();
 
       if (streamError) {
-        console.error('[M-Z] Error upserting stream:', streamError);
+        console.error('[ApexAuto] Error upserting stream:', streamError);
         throw streamError;
       }
 
-      console.log(`[M-Z] Stream ${action}ed for device ${device.name} (${imei})`);
+      console.log(`[ApexAuto] Stream ${action}ed for device ${device.name} (${imei})`);
 
       return new Response(
         JSON.stringify({
@@ -75,11 +75,11 @@ serve(async (req) => {
         .eq('device_id', device.id);
 
       if (deactivateError) {
-        console.error('[M-Z] Error deactivating stream:', deactivateError);
+        console.error('[ApexAuto] Error deactivating stream:', deactivateError);
         throw deactivateError;
       }
 
-      console.log(`[M-Z] Stream deactivated for device ${device.name} (${imei})`);
+      console.log(`[ApexAuto] Stream deactivated for device ${device.name} (${imei})`);
 
       return new Response(
         JSON.stringify({
@@ -97,7 +97,7 @@ serve(async (req) => {
     }
 
   } catch (error) {
-    console.error('[M-Z] Error in stream manager:', error);
+    console.error('[ApexAuto] Error in stream manager:', error);
     return new Response(
       JSON.stringify({ 
         error: (error as Error).message || 'Internal server error',

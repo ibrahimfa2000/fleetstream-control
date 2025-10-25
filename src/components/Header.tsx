@@ -31,8 +31,8 @@ const Header = () => {
     <header className="fixed top-0 left-0 right-0 z-50 border-b border-border bg-background/80 backdrop-blur-md">
       <nav className="container mx-auto flex items-center justify-between px-6 py-4">
         <div className="flex items-center gap-3">
-          <img src="./logo.jpg" alt="M-Z Logo" className="h-10 w-10 rounded-lg" />
-          <span className="text-2xl font-bold text-primary">M-Z</span>
+          <img src="./logo.jpg" alt="ApexAuto Logo" className="h-10 w-10 rounded-lg" />
+          <span className="text-2xl font-bold text-primary">ApexAuto</span>
         </div>
         
         <div className="hidden md:flex items-center gap-8">

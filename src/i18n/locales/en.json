@@ -5,9 +5,9 @@
     "signOut": "Sign Out"
   },
   "auth": {
-    "title": "M-Z",
+    "title": "ApexAuto",
     "signInSubtitle": "Sign in to your MDVR Management Platform",
-    "signUpSubtitle": "Create your M-Z account",
+    "signUpSubtitle": "Create your ApexAuto account",
     "email": "Email",
     "emailPlaceholder": "you@example.com",
     "password": "Password",
@@ -20,12 +20,12 @@
     "checkEmail": "Check your email for the confirmation link!"
   },
   "dashboard": {
-    "title": "M-Z Device Management",
+    "title": "ApexAuto Device Management",
     "subtitle": "Monitor and manage your MDVR devices",
     "searchPlaceholder": "Search devices by IMEI or name...",
     "addDevice": "Add Device",
     "noDevices": "No devices found",
-    "noDevicesDesc": "Get started by adding your first M-Z device"
+    "noDevicesDesc": "Get started by adding your first ApexAuto device"
   },
   "admin": {
     "title": "Admin Dashboard",

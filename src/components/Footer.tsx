@@ -9,8 +9,8 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
           <div className="space-y-4">
             <div className="flex items-center gap-3">
-              <img src="./logo.jpg" alt="M-Z Logo" className="h-10 w-10 rounded-lg" />
-              <span className="text-2xl font-bold text-primary">M-Z</span>
+              <img src="./logo.jpg" alt="ApexAuto Logo" className="h-10 w-10 rounded-lg" />
+              <span className="text-2xl font-bold text-primary">ApexAuto</span>
             </div>
             <p className="text-muted-foreground">
               {t('LandingPage.footerDesc')}
@@ -48,7 +48,7 @@ const Footer = () => {
         </div>
 
         <div className="pt-8 border-t border-border text-center text-muted-foreground">
-          <p>&copy; {new Date().getFullYear()} M-Z. {t('LandingPage.allRightsReserved')}</p>
+          <p>&copy; {new Date().getFullYear()} ApexAuto. {t('LandingPage.allRightsReserved')}</p>
         </div>
       </div>
     </footer>

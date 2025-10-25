@@ -9,11 +9,11 @@ verify_jwt = true
 [functions.mqtt-handler]
 verify_jwt = false
 
-[functions.M-Z-telemetry-sync]
+[functions.ApexAuto-telemetry-sync]
 verify_jwt = false
 
-[functions.M-Z-stream-manager]
+[functions.ApexAuto-stream-manager]
 verify_jwt = false
 
-[functions.M-Z-device-control]
+[functions.ApexAuto-device-control]
 verify_jwt = true
