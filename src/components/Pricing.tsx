@@ -22,11 +22,11 @@ const Pricing = () => {
   const individualPlans: Plan[] = [
     {
       name: t('LandingPage.basic'),
-      price: billingCycle === 'monthly' ? '$29' : '$290',
+      price: billingCycle === 'monthly' ? '₪29' : '₪290',
       period: billingCycle === 'monthly' ? t('LandingPage.perMonth') : '/year',
       description: t('LandingPage.basicDesc'),
       features: [
-        "Up to 3 vehicles",
+        "Up to 1 vehicles",
         "Basic real-time monitoring",
         "GPS tracking",
         "7-day video storage",
@@ -36,11 +36,11 @@ const Pricing = () => {
     },
     {
       name: t('LandingPage.pro'),
-      price: billingCycle === 'monthly' ? '$59' : '$590',
+      price: billingCycle === 'monthly' ? '₪59' : '₪590',
       period: billingCycle === 'monthly' ? t('LandingPage.perMonth') : '/year',
       description: t('LandingPage.proDesc'),
       features: [
-        "Up to 10 vehicles",
+        "Up to 3 vehicles",
         "Advanced real-time monitoring",
         "GPS tracking & route history",
         "30-day video storage",
@@ -53,11 +53,11 @@ const Pricing = () => {
     },
     {
       name: t('LandingPage.premium'),
-      price: billingCycle === 'monthly' ? '$99' : '$990',
+      price: billingCycle === 'monthly' ? '₪99' : '₪990',
       period: billingCycle === 'monthly' ? t('LandingPage.perMonth') : '/year',
       description: t('LandingPage.premiumDesc'),
       features: [
-        "Up to 25 vehicles",
+        "Up to 5 vehicles",
         "Premium real-time monitoring",
         "Advanced GPS & geofencing",
         "90-day video storage",
@@ -73,7 +73,7 @@ const Pricing = () => {
   const businessPlans: Plan[] = [
     {
       name: t('LandingPage.startup'),
-      price: billingCycle === 'monthly' ? '$199' : '$1,990',
+      price: billingCycle === 'monthly' ? '₪199' : '₪1,990',
       period: billingCycle === 'monthly' ? t('LandingPage.perMonth') : '/year',
       description: t('LandingPage.startupDesc'),
       features: [
@@ -90,7 +90,7 @@ const Pricing = () => {
     },
     {
       name: t('LandingPage.business'),
-      price: billingCycle === 'monthly' ? '$499' : '$4,990',
+      price: billingCycle === 'monthly' ? '₪499' : '₪4,990',
       period: billingCycle === 'monthly' ? t('LandingPage.perMonth') : '/year',
       description: t('LandingPage.businessDesc'),
       features: [
