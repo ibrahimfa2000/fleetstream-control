@@ -1,100 +1,70 @@
-import { useEffect, useRef } from 'react';
-import mapboxgl from 'mapbox-gl';
-import 'mapbox-gl/dist/mapbox-gl.css';
-import { MapPin } from 'lucide-react';
+"use client"
 
-interface GPSMapProps {
-  latitude: number;
-  longitude: number;
-  deviceName?: string;
+import { useEffect, useRef } from "react"
+
+interface DeviceMapProps {
+  lat: number
+  lon: number
+  deviceName?: string
 }
 
-const GPSMap = ({ latitude, longitude, deviceName }: GPSMapProps) => {
-  const mapContainer = useRef<HTMLDivElement>(null);
-  const map = useRef<mapboxgl.Map | null>(null);
-  const marker = useRef<mapboxgl.Marker | null>(null);
+export function DeviceMap({ lat, lon, deviceName }: DeviceMapProps) {
+  const mapRef = useRef<HTMLDivElement>(null)
+  const mapInstanceRef = useRef<any>(null)
 
   useEffect(() => {
-    if (!mapContainer.current) return;
+    if (typeof window === "undefined" || !mapRef.current) return
 
-    // Set your Mapbox access token here
-    // For production, store this in Supabase Edge Function Secrets
-    mapboxgl.accessToken = 'pk.eyJ1IjoiZ2lzaW9uIiwiYSI6ImNscXh5ejB6ZzBhNGwyanF4YnN4eGJ4ZjUifQ.placeholder';
+    const initMap = async () => {
+      const L = (await import("leaflet")).default
+      await import("leaflet/dist/leaflet.css")
 
-    try {
+      // Fix default marker icons
+      delete (L.Icon.Default.prototype as any)._getIconUrl
+      L.Icon.Default.mergeOptions({
+        iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
+        iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
+        shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+      })
+
+      // Clean up previous map
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.remove()
+      }
+
       // Initialize map
-      map.current = new mapboxgl.Map({
-        container: mapContainer.current,
-        style: 'mapbox://styles/mapbox/dark-v11',
-        center: [longitude, latitude],
-        zoom: 14,
-      });
+      const map = L.map(mapRef.current).setView([lat, lon], 13)
 
-      // Add navigation controls
-      map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
+      // Add OpenStreetMap tiles
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+        maxZoom: 19,
+      }).addTo(map)
 
-      // Create custom marker
-      const el = document.createElement('div');
-      el.className = 'custom-marker';
-      el.style.width = '40px';
-      el.style.height = '40px';
-      el.style.backgroundImage = 'url(data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cGF0aCBkPSJNMjEgMTBjMCA3LTkgMTMtOSAxM3MtOS02LTktMTNhOSA5IDAgMCAxIDE4IDB6IiBmaWxsPSIjRDRBRjM3IiBzdHJva2U9IiMyMzFGMjAiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PGNpcmNsZSBjeD0iMTIiIGN5PSIxMCIgcj0iMyIgZmlsbD0iIzIzMUYyMCIvPjwvc3ZnPg==)';
-      el.style.backgroundSize = 'contain';
-      el.style.cursor = 'pointer';
+      // Add marker with popup
+      const marker = L.marker([lat, lon]).addTo(map)
+      if (deviceName) {
+        marker
+          .bindPopup(`<b>${deviceName}</b><br>Lat: ${lat.toFixed(6)}<br>Lon: ${lon.toFixed(6)}`)
+          .openPopup()
+      }
 
-      // Add marker to map
-      marker.current = new mapboxgl.Marker(el)
-        .setLngLat([longitude, latitude])
-        .setPopup(
-          new mapboxgl.Popup({ offset: 25 }).setHTML(
-            `<div style="padding: 8px; color: #231F20;">
-              <strong style="color: #D4AF37;">${deviceName || 'ApexAuto Device'}</strong><br/>
-              <span style="font-size: 12px;">Lat: ${latitude.toFixed(6)}</span><br/>
-              <span style="font-size: 12px;">Lng: ${longitude.toFixed(6)}</span>
-            </div>`
-          )
-        )
-        .addTo(map.current);
-
-      // Show popup by default
-      marker.current.togglePopup();
-
-    } catch (error) {
-      console.error('Error initializing map:', error);
+      mapInstanceRef.current = map
     }
 
-    return () => {
-      marker.current?.remove();
-      map.current?.remove();
-    };
-  }, [latitude, longitude, deviceName]);
+    initMap()
 
-  // If mapbox token is not configured, show placeholder
-  if (!mapboxgl.accessToken || mapboxgl.accessToken.includes('placeholder')) {
-    return (
-      <div className="aspect-video bg-gradient-to-br from-secondary/20 to-secondary/5 rounded-lg border border-border flex items-center justify-center">
-        <div className="text-center space-y-3 p-6">
-          <MapPin className="w-12 h-12 text-primary mx-auto" />
-          <div>
-            <p className="font-semibold text-foreground">GPS Location</p>
-            <p className="text-sm text-muted-foreground mt-2">
-              Lat: {latitude.toFixed(6)}, Lng: {longitude.toFixed(6)}
-            </p>
-          </div>
-          <p className="text-xs text-muted-foreground max-w-md">
-            Configure Mapbox token in Supabase Edge Function Secrets to enable interactive map visualization
-          </p>
-        </div>
-      </div>
-    );
-  }
+    return () => {
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.remove()
+        mapInstanceRef.current = null
+      }
+    }
+  }, [lat, lon, deviceName])
 
   return (
-    <div 
-      ref={mapContainer} 
-      className="aspect-video rounded-lg shadow-elegant border border-border overflow-hidden"
-    />
-  );
-};
-
-export default GPSMap;
+    <div className="relative w-full h-[200px] rounded-lg overflow-hidden border border-border/50">
+      <div ref={mapRef} className="w-full h-full" />
+    </div>
+  )
+}

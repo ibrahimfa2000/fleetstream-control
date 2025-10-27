@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Radio, Signal, Battery, HardDrive, MapPin } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { useTranslation } from "react-i18next";
+import { DeviceMap } from "./GPSMap";
 
 interface DeviceCardProps {
   device: {
@@ -107,7 +108,11 @@ const DeviceCard = ({ device, telemetry, subscription, onClick }: DeviceCardProp
             )}
           </div>
         )}
-
+        {telemetry?.gps_lat !== undefined && telemetry?.gps_lon !== undefined && (
+          <div className="mb-4">
+            <DeviceMap lat={telemetry.gps_lat} lon={telemetry.gps_lon} deviceName={device.name} />
+          </div>
+        )}
         <div className="flex items-center justify-between pt-4 border-t border-primary/10">
           <div className="flex flex-col gap-1.5">
             {subscription && (

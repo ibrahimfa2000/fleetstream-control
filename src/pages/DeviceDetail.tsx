@@ -3,7 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/components/Navbar";
 import StreamPlayer from "@/components/StreamPlayer";
-import GPSMap from "@/components/GPSMap";
+import { DeviceMap } from "@/components/GPSMap";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -273,9 +273,9 @@ const DeviceDetail = () => {
                               <MapPin className="w-4 h-4 text-primary" />
                               {t('deviceDetail.telemetry.gpsMap')}
                             </h4>
-                            <GPSMap 
-                              latitude={telemetry.gps_lat} 
-                              longitude={telemetry.gps_lon}
+                            <DeviceMap 
+                              lat={telemetry.gps_lat} 
+                              lon={telemetry.gps_lon}
                               deviceName={device.name}
                             />
                           </div>
