@@ -33,14 +33,33 @@ export function DeviceMap({ lat, lon, deviceName }: DeviceMapProps) {
       }
 
       // Initialize map
-      const map = L.map(mapRef.current).setView([lat, lon], 13)
+      const map = L.map(mapRef.current, {
+  attributionControl: true, // default = true
+}).setView([lat, lon], 30)
 
       // Add OpenStreetMap tiles
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-        maxZoom: 19,
-      }).addTo(map)
+      const baseLayers = {
+        "Satellite": L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", {
+    attribution: "ApexAuto © maps",
+    maxZoom: 18,
+  }),
+  "Topo": L.tileLayer("https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png", {
+    maxZoom: 17,
+    attribution: "ApexAuto © maps",
+  }),
+  
+  "OSM": L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    maxZoom: 19,
+    attribution: "ApexAuto © maps",
+  }),
+}
 
+// Add one by default
+baseLayers["Satellite"].addTo(map)
+
+// Add the layer switch control
+L.control.layers(baseLayers).addTo(map)
+      
       // Add marker with popup
       const marker = L.marker([lat, lon]).addTo(map)
       if (deviceName) {
