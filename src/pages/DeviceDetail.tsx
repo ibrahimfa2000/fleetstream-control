@@ -11,10 +11,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { 
   ArrowLeft, Radio, Signal, Battery, HardDrive, MapPin, 
-  PlayCircle, PauseCircle, Power, RotateCcw, Video, Terminal
+  PlayCircle, PauseCircle, Power, RotateCcw, Video, Terminal, RefreshCcw
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { useTranslation } from "react-i18next";
+import { useCMSV6Session, useCMSV6LiveVideo, useCMSV6Telemetry, useCMSV6Control } from "@/hooks/useCMSV6";
 
 const DeviceDetail = () => {
   const { id } = useParams();
@@ -26,6 +27,12 @@ const DeviceDetail = () => {
   const [stream, setStream] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
+  
+  // CMSV6 integration
+  const { jsession } = useCMSV6Session();
+  const { getLiveVideo } = useCMSV6LiveVideo();
+  const { getTelemetry } = useCMSV6Telemetry();
+  const { sendCommand: sendCMSV6Command } = useCMSV6Control();
 
   useEffect(() => {
     fetchDeviceData();
@@ -115,6 +122,24 @@ const DeviceDetail = () => {
   const handleSendCommand = async (command: string) => {
     setActionLoading(true);
     try {
+      // Try CMSV6 control first if session is available
+      if (jsession && device?.imei) {
+        const commandMapping: any = {
+          'reboot': { command: 'device_control', params: { controlType: 'reboot' } },
+          'start_recording': { command: 'device_control', params: { controlType: 'start_record' } },
+          'stop_recording': { command: 'device_control', params: { controlType: 'stop_record' } },
+          'update_config': { command: 'device_control', params: { controlType: 'update_config' } },
+        };
+        
+        const cmsv6Command = commandMapping[command];
+        if (cmsv6Command) {
+          await sendCMSV6Command(jsession, device.imei, cmsv6Command.command, cmsv6Command.params);
+          toast.success(t('deviceDetail.commandSuccess', { command }));
+          return;
+        }
+      }
+      
+      // Fallback to legacy command system
       const { data: { session } } = await supabase.auth.getSession();
       const response = await supabase.functions.invoke('send-device-command', {
         body: {
@@ -132,6 +157,49 @@ const DeviceDetail = () => {
       toast.success(t('deviceDetail.commandSuccess', { command }));
     } catch (error: any) {
       toast.error(t('deviceDetail.commandError') + ": " + error.message);
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const refreshCMSV6Data = async () => {
+    if (!jsession || !device?.imei) {
+      toast.error("CMSV6 session or device IMEI not available");
+      return;
+    }
+    
+    setActionLoading(true);
+    try {
+      // Refresh telemetry from CMSV6
+      const cmsv6Telemetry = await getTelemetry(jsession, device.imei);
+      if (cmsv6Telemetry) {
+        toast.success("CMSV6 telemetry refreshed");
+      }
+      
+      // Refresh local data
+      await fetchDeviceData();
+    } catch (error: any) {
+      toast.error("Failed to refresh CMSV6 data: " + error.message);
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const loadCMSV6Stream = async () => {
+    if (!jsession || !device?.imei) {
+      toast.error("CMSV6 session or device IMEI not available");
+      return;
+    }
+    
+    setActionLoading(true);
+    try {
+      const streamUrl = await getLiveVideo(jsession, device.imei, 0, 1);
+      if (streamUrl) {
+        setStream({ stream_url: streamUrl, stream_type: 'HLS' });
+        toast.success("Live stream loaded from CMSV6");
+      }
+    } catch (error: any) {
+      toast.error("Failed to load CMSV6 stream: " + error.message);
     } finally {
       setActionLoading(false);
     }
@@ -177,22 +245,39 @@ const DeviceDetail = () => {
             {/* Device Info */}
             <Card className="lg:col-span-2 bg-card/50 backdrop-blur-sm border-border/50">
               <CardHeader>
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-lg bg-primary/20 flex items-center justify-center">
-                      <Radio className="w-6 h-6 text-primary" />
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 rounded-lg bg-primary/20 flex items-center justify-center">
+                        <Radio className="w-6 h-6 text-primary" />
+                      </div>
+                      <div>
+                        <CardTitle className="text-2xl">{device.name}</CardTitle>
+                        <p className="text-sm text-muted-foreground mt-1">
+                          IMEI: {device.imei}
+                        </p>
+                        {jsession && (
+                          <p className="text-xs text-success mt-1">✓ CMSV6 Connected</p>
+                        )}
+                      </div>
                     </div>
-                    <div>
-                      <CardTitle className="text-2xl">{device.name}</CardTitle>
-                      <p className="text-sm text-muted-foreground mt-1">
-                        IMEI: {device.imei}
-                      </p>
+                    <div className="flex flex-col gap-2 items-end">
+                      <Badge variant="outline" className={getStatusColor(device.status)}>
+                        {t(`device.status.${device.status}`)}
+                      </Badge>
+                      {jsession && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={refreshCMSV6Data}
+                          disabled={actionLoading}
+                          className="gap-2 h-8 text-xs"
+                        >
+                          <RefreshCcw className={`w-3 h-3 ${actionLoading ? 'animate-spin' : ''}`} />
+                          Sync CMSV6
+                        </Button>
+                      )}
                     </div>
                   </div>
-                  <Badge variant="outline" className={getStatusColor(device.status)}>
-                    {t(`device.status.${device.status}`)}
-                  </Badge>
-                </div>
               </CardHeader>
               <CardContent>
                 <Tabs defaultValue="overview" className="w-full">
@@ -295,7 +380,18 @@ const DeviceDetail = () => {
                     ) : (
                       <div className="text-center py-8">
                         <Video className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
-                        <p className="text-muted-foreground">{t('deviceDetail.stream.noStream')}</p>
+                        <p className="text-muted-foreground mb-4">{t('deviceDetail.stream.noStream')}</p>
+                        {jsession && (
+                          <Button
+                            variant="outline"
+                            onClick={loadCMSV6Stream}
+                            disabled={actionLoading}
+                            className="gap-2"
+                          >
+                            <PlayCircle className="w-4 h-4" />
+                            Load CMSV6 Stream
+                          </Button>
+                        )}
                       </div>
                     )}
                   </TabsContent>

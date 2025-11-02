@@ -7,9 +7,10 @@ import DeviceCard from "@/components/DeviceCard";
 import AddDeviceDialog from "@/components/AddDeviceDialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, Search } from "lucide-react";
+import { Plus, Search, RefreshCcw } from "lucide-react";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
+import { useCMSV6Session, useCMSV6Vehicles } from "@/hooks/useCMSV6";
 
 const Dashboard = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -18,6 +19,10 @@ const Dashboard = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const navigate = useNavigate();
   const { t } = useTranslation();
+  
+  // CMSV6 integration
+  const { jsession, isLoading: sessionLoading, error: sessionError, refreshSession } = useCMSV6Session();
+  const { vehicles: cmsv6Vehicles, isLoading: vehiclesLoading, refetch: refetchVehicles } = useCMSV6Vehicles(jsession);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -46,6 +51,7 @@ const Dashboard = () => {
 
   const fetchDevices = async (userId: string) => {
     try {
+      // Fetch devices from local database
       const { data: devicesData, error: devicesError } = await (supabase as any)
         .from("devices")
         .select("*")
@@ -90,6 +96,24 @@ const Dashboard = () => {
     }
   };
 
+  const syncCMSV6Data = async () => {
+    if (!jsession) {
+      toast.error("CMSV6 session not available. Refreshing...");
+      refreshSession();
+      return;
+    }
+    
+    try {
+      await refetchVehicles();
+      if (user) {
+        await fetchDevices(user.id);
+      }
+      toast.success("CMSV6 data synced successfully");
+    } catch (error: any) {
+      toast.error("Failed to sync CMSV6 data: " + error.message);
+    }
+  };
+
   const filteredDevices = devices.filter(
     (device) =>
       device.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -119,8 +143,26 @@ const Dashboard = () => {
               <p className="text-muted-foreground">
                 {t('dashboard.subtitle')}
               </p>
+              {jsession && (
+                <p className="text-xs text-success mt-1">✓ CMSV6 Connected</p>
+              )}
+              {sessionError && (
+                <p className="text-xs text-destructive mt-1">⚠ CMSV6 Error: {sessionError}</p>
+              )}
             </div>
-            <AddDeviceDialog onDeviceAdded={() => fetchDevices(user!.id)} />
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={syncCMSV6Data}
+                disabled={!jsession || vehiclesLoading}
+                className="gap-2"
+              >
+                <RefreshCcw className={`w-4 h-4 ${vehiclesLoading ? 'animate-spin' : ''}`} />
+                Sync CMSV6
+              </Button>
+              <AddDeviceDialog onDeviceAdded={() => fetchDevices(user!.id)} />
+            </div>
           </div>
 
           <div className="mb-6">

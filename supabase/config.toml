@@ -9,11 +9,29 @@ verify_jwt = true
 [functions.mqtt-handler]
 verify_jwt = false
 
-[functions.ApexAuto-telemetry-sync]
+[functions.gision-telemetry-sync]
 verify_jwt = false
 
-[functions.ApexAuto-stream-manager]
+[functions.gision-stream-manager]
 verify_jwt = false
 
-[functions.ApexAuto-device-control]
+[functions.gision-device-control]
+verify_jwt = true
+
+[functions.cmsv6-login]
+verify_jwt = false
+
+[functions.cmsv6-vehicles]
+verify_jwt = true
+
+[functions.cmsv6-live-video]
+verify_jwt = true
+
+[functions.cmsv6-telemetry]
+verify_jwt = true
+
+[functions.cmsv6-control]
+verify_jwt = true
+
+[functions.cmsv6-alarms]
 verify_jwt = true

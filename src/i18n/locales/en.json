@@ -25,7 +25,10 @@
     "searchPlaceholder": "Search devices by IMEI or name...",
     "addDevice": "Add Device",
     "noDevices": "No devices found",
-    "noDevicesDesc": "Get started by adding your first ApexAuto device"
+    "noDevicesDesc": "Get started by adding your first ApexAuto device",
+    "syncCMSV6": "Sync CMSV6",
+    "cmsv6Connected": "CMSV6 Connected",
+    "cmsv6Error": "CMSV6 Error"
   },
   "admin": {
     "title": "Admin Dashboard",
@@ -162,7 +165,8 @@
       "noData": "No telemetry data available"
     },
     "stream": {
-      "noStream": "No stream configured"
+      "noStream": "No stream configured",
+      "loadCMSV6": "Load CMSV6 Stream"
     },
     "control": {
       "reboot": "Reboot",
@@ -181,7 +185,11 @@
     "subscriptionSuccess": "Subscription {{action}}d successfully!",
     "subscriptionError": "Failed to {{action}} subscription",
     "commandSuccess": "Command \"{{command}}\" sent successfully!",
-    "commandError": "Failed to send command"
+    "commandError": "Failed to send command",
+    "cmsv6Connected": "CMSV6 Connected",
+    "syncCMSV6": "Sync CMSV6",
+    "cmsv6Synced": "CMSV6 data synced successfully",
+    "cmsv6SyncError": "Failed to sync CMSV6"
   },
   "notFound": {
     "title": "404",
