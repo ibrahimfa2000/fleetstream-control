@@ -310,6 +310,30 @@ const DeviceDetail = () => {
                             : t('deviceDetail.fields.never')}
                         </p>
                       </div>
+                      {device.vehicle_type && (
+                        <div>
+                          <p className="text-sm text-muted-foreground">Vehicle Type</p>
+                          <p className="font-medium">{device.vehicle_type}</p>
+                        </div>
+                      )}
+                      {device.plate_number && (
+                        <div>
+                          <p className="text-sm text-muted-foreground">Plate Number</p>
+                          <p className="font-medium">{device.plate_number}</p>
+                        </div>
+                      )}
+                      {device.vin && (
+                        <div>
+                          <p className="text-sm text-muted-foreground">VIN</p>
+                          <p className="font-medium text-xs">{device.vin}</p>
+                        </div>
+                      )}
+                      {device.channels && (
+                        <div>
+                          <p className="text-sm text-muted-foreground">Channels</p>
+                          <p className="font-medium">{device.channels}</p>
+                        </div>
+                      )}
                     </div>
                   </TabsContent>
 
