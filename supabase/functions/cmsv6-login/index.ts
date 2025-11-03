@@ -19,6 +19,13 @@ serve(async (req) => {
       throw new Error('CMSV6 API credentials not configured');
     }
 
+    // Validate URL format
+    try {
+      new URL(CMSV6_API_URL);
+    } catch {
+      throw new Error(`Invalid CMSV6_API_URL format. Expected: http://your-server:port or https://your-domain. Got: ${CMSV6_API_URL}`);
+    }
+
     console.log('[CMSV6] Attempting login to CMSV6 API...');
 
     // Login to CMSV6 API

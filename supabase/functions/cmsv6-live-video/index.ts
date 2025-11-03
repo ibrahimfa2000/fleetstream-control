@@ -30,6 +30,7 @@ serve(async (req) => {
     }
 
     const CMSV6_API_URL = Deno.env.get('CMSV6_API_URL');
+    const CMSV6_STREAM_PORT = Deno.env.get('CMSV6_STREAM_PORT') || '6604';
 
     if (!CMSV6_API_URL) {
       throw new Error('CMSV6 API URL not configured');
@@ -43,52 +44,40 @@ serve(async (req) => {
 
     console.log(`[CMSV6] Getting live video for device: ${deviceId}, channel: ${channel}`);
 
-    // Get live video stream from CMSV6 API
+    // Parse base URL to construct HLS stream URL
+    // CMSV6 uses format: http://server:6604/hls/1_deviceId_channel_streamType.m3u8?jsession=xxx
+    // requestType: 1=video
     // streamType: 0=main stream, 1=sub stream
-    const videoUrl = `${CMSV6_API_URL}/StandardApiAction_video.action?jsession=${jsession}&devIdno=${deviceId}&channel=${channel}&streamType=${streamType}`;
+    const baseUrl = new URL(CMSV6_API_URL);
+    const streamUrl = `${baseUrl.protocol}//${baseUrl.hostname}:${CMSV6_STREAM_PORT}/hls/1_${deviceId}_${channel}_${streamType}.m3u8?jsession=${jsession}`;
     
-    const response = await fetch(videoUrl, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error(`CMSV6 API request failed: ${response.statusText}`);
-    }
-
-    const data = await response.json();
-    
-    console.log('[CMSV6] Live video URL retrieved');
+    console.log('[CMSV6] Live video HLS URL generated:', streamUrl);
 
     // Update streams table with the video URL
-    if (data.result === 0 && data.url) {
-      const { data: device } = await supabaseClient
-        .from('devices')
-        .select('id')
-        .eq('imei', deviceId)
-        .single();
+    const { data: device } = await supabaseClient
+      .from('devices')
+      .select('id')
+      .eq('imei', deviceId)
+      .maybeSingle();
 
-      if (device) {
-        await supabaseClient
-          .from('streams')
-          .upsert({
-            device_id: device.id,
-            stream_url: data.url,
-            stream_type: data.protocol || 'HLS',
-            last_active: new Date().toISOString(),
-          }, {
-            onConflict: 'device_id',
-          });
-      }
+    if (device) {
+      await supabaseClient
+        .from('streams')
+        .upsert({
+          device_id: device.id,
+          stream_url: streamUrl,
+          stream_type: 'HLS',
+          last_active: new Date().toISOString(),
+        }, {
+          onConflict: 'device_id',
+        });
     }
 
     return new Response(
       JSON.stringify({
         success: true,
-        data: data,
-        streamUrl: data.url || null,
+        streamUrl: streamUrl,
+        protocol: 'HLS',
       }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },

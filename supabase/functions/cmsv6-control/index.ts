@@ -50,32 +50,36 @@ serve(async (req) => {
     });
 
     // Map commands to CMSV6 API endpoints
+    // Reference: https://v7.cmsv8.com/808gps/open/webApi.html
     switch (command) {
       case 'ptz_control':
+        // PTZ control: up, down, left, right, zoom in/out
         commandUrl = `${CMSV6_API_URL}/StandardApiAction_ptzControl.action`;
         commandParams.append('channel', params.channel || '0');
-        commandParams.append('command', params.ptzCommand || '1');
+        commandParams.append('ptzCommand', params.ptzCommand || '1');
         commandParams.append('param1', params.param1 || '5');
         break;
       
       case 'location_interval':
+        // Set GPS location reporting interval
         commandUrl = `${CMSV6_API_URL}/StandardApiAction_setPositionInterval.action`;
         commandParams.append('interval', params.interval || '30');
         break;
       
       case 'send_text':
+        // Send text message to device (TTS)
         commandUrl = `${CMSV6_API_URL}/StandardApiAction_distributeMsg.action`;
-        commandParams.append('message', params.message || '');
+        commandParams.append('content', params.message || '');
         break;
       
-      case 'device_control':
-        commandUrl = `${CMSV6_API_URL}/StandardApiAction_deviceControl.action`;
-        commandParams.append('controlType', params.controlType || '1');
-        commandParams.append('controlParam', params.controlParam || '');
+      case 'vehicle_control':
+        // Vehicle control: oil/circuit control
+        commandUrl = `${CMSV6_API_URL}/StandardApiAction_vehicleControl.action`;
+        commandParams.append('instruction', params.instruction || '1'); // 1=oil on, 2=oil off, 3=circuit on, 4=circuit off
         break;
       
       default:
-        throw new Error(`Unknown command: ${command}`);
+        throw new Error(`Unknown command: ${command}. Supported: ptz_control, location_interval, send_text, vehicle_control`);
     }
 
     const fullUrl = `${commandUrl}?${commandParams.toString()}`;
