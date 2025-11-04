@@ -7,6 +7,7 @@ import Dashboard from "./pages/Dashboard";
 import AdminDashboard from "./pages/AdminDashboard";
 import Auth from "./pages/Auth";
 import DeviceDetail from "./pages/DeviceDetail";
+import VehicleDetail from "./pages/VehicleDetail";
 import NotFound from "./pages/NotFound";
 import LandingPage from "./pages/LandingPage";
 import VideoManagement from "./pages/VideoManagement";
@@ -31,6 +32,7 @@ const App = () => (
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/device/:id" element={<DeviceDetail />} />
+          <Route path="/vehicle/:id" element={<VehicleDetail />} />
           <Route path="/video-management" element={<VideoManagement />} />
           <Route path="/fleet-management" element={<FleetManagement />} />
           <Route path="/system-management" element={<SystemManagement />} />

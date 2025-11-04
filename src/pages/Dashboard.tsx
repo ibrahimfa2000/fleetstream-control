@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { User } from "@supabase/supabase-js";
 import Navbar from "@/components/Navbar";
-import DeviceCard from "@/components/DeviceCard";
+import VehicleCard from "@/components/VehicleCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Plus, Search, RefreshCcw } from "lucide-react";
@@ -59,13 +59,13 @@ const Dashboard = () => {
     }
   };
 
-  const devices = cmsv6Vehicles || [];
+  const vehicles = cmsv6Vehicles || [];
   
-  const filteredDevices = devices.filter(
-    (device) =>
-      (device.plate?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-       device.devIdno?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-       device.deviceNumber?.toLowerCase().includes(searchQuery.toLowerCase()))
+  const filteredVehicles = vehicles.filter(
+    (vehicle) =>
+      (vehicle.plate?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+       vehicle.devIdno?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+       vehicle.deviceNumber?.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
   if (sessionLoading || vehiclesLoading) {
@@ -131,39 +131,23 @@ const Dashboard = () => {
             </div>
           </div>
 
-          {filteredDevices.length === 0 ? (
+          {filteredVehicles.length === 0 ? (
             <div className="text-center py-16">
               <p className="text-muted-foreground mb-4">
-                {searchQuery ? t('dashboard.noDevices') : 'No devices found in CMSV6'}
+                {searchQuery ? t('dashboard.noDevices') : 'No vehicles found in CMSV6'}
               </p>
               <Button onClick={() => navigate('/device-management')} className="gap-2">
                 <Plus className="w-4 h-4" />
-                Add Device in CMSV6
+                Add Vehicle in CMSV6
               </Button>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredDevices.map((device, index) => (
-                <DeviceCard
-                  key={device.devIdno || device.id || index}
-                  device={{
-                    id: device.devIdno || device.id,
-                    name: device.plate || device.deviceNumber || 'Unknown Device',
-                    imei: device.devIdno || device.deviceNumber || 'N/A',
-                    model: device.model,
-                    status: device.state === 1 ? 'online' : 'offline',
-                    last_seen: device.gpsTime
-                  }}
-                  telemetry={{
-                    signal_strength: device.signal,
-                    battery_level: device.battery,
-                    gps_lat: device.mlat,
-                    gps_lon: device.mlng
-                  }}
-                  subscription={{
-                    status: device.state === 1 ? 'active' : 'inactive'
-                  }}
-                  onClick={() => navigate(`/device/${device.devIdno || device.id}`)}
+              {filteredVehicles.map((vehicle, index) => (
+                <VehicleCard
+                  key={vehicle.devIdno || vehicle.id || index}
+                  vehicle={vehicle}
+                  onClick={() => navigate(`/vehicle/${vehicle.devIdno || vehicle.id}`)}
                 />
               ))}
             </div>
