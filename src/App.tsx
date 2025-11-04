@@ -9,6 +9,12 @@ import Auth from "./pages/Auth";
 import DeviceDetail from "./pages/DeviceDetail";
 import NotFound from "./pages/NotFound";
 import LandingPage from "./pages/LandingPage";
+import VideoManagement from "./pages/VideoManagement";
+import FleetManagement from "./pages/FleetManagement";
+import SystemManagement from "./pages/SystemManagement";
+import ReportsPage from "./pages/ReportsPage";
+import RulesManagement from "./pages/RulesManagement";
+import DeviceManagementPage from "./pages/DeviceManagementPage";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 const queryClient = new QueryClient();
 
@@ -25,6 +31,12 @@ const App = () => (
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/device/:id" element={<DeviceDetail />} />
+          <Route path="/video-management" element={<VideoManagement />} />
+          <Route path="/fleet-management" element={<FleetManagement />} />
+          <Route path="/system-management" element={<SystemManagement />} />
+          <Route path="/reports" element={<ReportsPage />} />
+          <Route path="/rules-management" element={<RulesManagement />} />
+          <Route path="/device-management" element={<DeviceManagementPage />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

@@ -1,11 +1,18 @@
 import { Button } from "@/components/ui/button";
-import { Radio, LogOut, Shield } from "lucide-react";
+import { Radio, LogOut, Shield, Menu, Video, Car, FileText, Settings as SettingsIcon, MapPin, Smartphone } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useUserRole } from "@/hooks/useUserRole";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import LanguageSwitcher from "./LanguageSwitcher";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
 
 const Navbar = () => {
   const navigate = useNavigate();
@@ -41,26 +48,59 @@ const Navbar = () => {
             </div>
           </div>
           
-          {isAdmin && (
-            <div className="flex gap-2">
-              <Button
-                variant={location.pathname === "/" ? "default" : "ghost"}
-                size="sm"
-                onClick={() => navigate("/")}
-              >
-                {t('nav.myDevices')}
-              </Button>
-              <Button
-                variant={location.pathname === "/admin" ? "default" : "ghost"}
-                size="sm"
-                onClick={() => navigate("/admin")}
-                className="gap-2"
-              >
-                <Shield className="w-4 h-4" />
-                {t('nav.admin')}
-              </Button>
-            </div>
-          )}
+          <div className="flex gap-2">
+            <Button
+              variant={location.pathname === "/dashboard" ? "default" : "ghost"}
+              size="sm"
+              onClick={() => navigate("/dashboard")}
+            >
+              {t('nav.myDevices')}
+            </Button>
+            
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="sm" className="gap-2">
+                  <Menu className="w-4 h-4" />
+                  Management
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuItem onClick={() => navigate("/video-management")}>
+                  <Video className="w-4 h-4 mr-2" />
+                  Video Management
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate("/fleet-management")}>
+                  <Car className="w-4 h-4 mr-2" />
+                  Fleet Management
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate("/device-management")}>
+                  <Smartphone className="w-4 h-4 mr-2" />
+                  Device Management
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate("/rules-management")}>
+                  <MapPin className="w-4 h-4 mr-2" />
+                  Rules & Areas
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate("/reports")}>
+                  <FileText className="w-4 h-4 mr-2" />
+                  Reports
+                </DropdownMenuItem>
+                {isAdmin && (
+                  <>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={() => navigate("/system-management")}>
+                      <SettingsIcon className="w-4 h-4 mr-2" />
+                      System Management
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => navigate("/admin")}>
+                      <Shield className="w-4 h-4 mr-2" />
+                      Admin Dashboard
+                    </DropdownMenuItem>
+                  </>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </div>
         <div className="flex items-center gap-2">
           <LanguageSwitcher />
