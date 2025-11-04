@@ -64,22 +64,48 @@ serve(async (req) => {
     // Sync vehicles to our database
     if (data.vehicles && Array.isArray(data.vehicles)) {
       for (const vehicle of data.vehicles) {
-        const { error: upsertError } = await supabaseClient
+        const deviceImei = vehicle.deviceNumber || vehicle.deviceId;
+        
+        // Check if device already exists
+        const { data: existingDevice } = await supabaseClient
           .from('devices')
-          .upsert({
-            imei: vehicle.deviceNumber || vehicle.deviceId,
-            name: vehicle.name || vehicle.vehicleName,
-            owner_id: user.id,
-            sim_iccid: vehicle.simNumber || 'unknown',
-            model: vehicle.vehicleType || 'GISION MDVR',
-            status: vehicle.onlineStatus === 1 ? 'online' : 'offline',
-            last_seen: vehicle.onlineStatus === 1 ? new Date().toISOString() : null,
-          }, {
-            onConflict: 'imei',
-          });
+          .select('id, owner_id')
+          .eq('imei', deviceImei)
+          .maybeSingle();
 
-        if (upsertError) {
-          console.error(`[CMSV6] Error syncing vehicle ${vehicle.deviceNumber}:`, upsertError);
+        if (existingDevice) {
+          // Update only non-ownership fields for existing devices
+          const { error: updateError } = await supabaseClient
+            .from('devices')
+            .update({
+              name: vehicle.name || vehicle.vehicleName,
+              sim_iccid: vehicle.simNumber || 'unknown',
+              model: vehicle.vehicleType || 'GISION MDVR',
+              status: vehicle.onlineStatus === 1 ? 'online' : 'offline',
+              last_seen: vehicle.onlineStatus === 1 ? new Date().toISOString() : null,
+            })
+            .eq('id', existingDevice.id);
+
+          if (updateError) {
+            console.error(`[CMSV6] Error updating vehicle ${deviceImei}:`, updateError);
+          }
+        } else {
+          // Create new device with current user as owner
+          const { error: insertError } = await supabaseClient
+            .from('devices')
+            .insert({
+              imei: deviceImei,
+              name: vehicle.name || vehicle.vehicleName,
+              owner_id: user.id,
+              sim_iccid: vehicle.simNumber || 'unknown',
+              model: vehicle.vehicleType || 'GISION MDVR',
+              status: vehicle.onlineStatus === 1 ? 'online' : 'offline',
+              last_seen: vehicle.onlineStatus === 1 ? new Date().toISOString() : null,
+            });
+
+          if (insertError) {
+            console.error(`[CMSV6] Error creating vehicle ${deviceImei}:`, insertError);
+          }
         }
       }
     }

@@ -19,7 +19,7 @@ verify_jwt = false
 verify_jwt = true
 
 [functions.cmsv6-login]
-verify_jwt = false
+verify_jwt = true
 
 [functions.cmsv6-vehicles]
 verify_jwt = true
