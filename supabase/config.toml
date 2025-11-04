@@ -21,6 +21,9 @@ verify_jwt = true
 [functions.cmsv6-login]
 verify_jwt = true
 
+[functions.cmsv6-logout]
+verify_jwt = true
+
 [functions.cmsv6-vehicles]
 verify_jwt = true
 
@@ -34,4 +37,49 @@ verify_jwt = true
 verify_jwt = true
 
 [functions.cmsv6-alarms]
+verify_jwt = true
+
+[functions.cmsv6-device-track]
+verify_jwt = true
+
+[functions.cmsv6-device-mileage]
+verify_jwt = true
+
+[functions.cmsv6-video-query]
+verify_jwt = true
+
+[functions.cmsv6-device-management]
+verify_jwt = true
+
+[functions.cmsv6-area-management]
+verify_jwt = true
+
+[functions.cmsv6-organization-management]
+verify_jwt = true
+
+[functions.cmsv6-role-management]
+verify_jwt = true
+
+[functions.cmsv6-user-management]
+verify_jwt = true
+
+[functions.cmsv6-driver-management]
+verify_jwt = true
+
+[functions.cmsv6-sim-management]
+verify_jwt = true
+
+[functions.cmsv6-reports]
+verify_jwt = true
+
+[functions.cmsv6-rule-management]
+verify_jwt = true
+
+[functions.cmsv6-traffic-card]
+verify_jwt = true
+
+[functions.cmsv6-safety-business]
+verify_jwt = true
+
+[functions.cmsv6-1078-business]
 verify_jwt = true
