@@ -14,6 +14,62 @@ export type Database = {
   }
   public: {
     Tables: {
+      device_commands: {
+        Row: {
+          command_type: string
+          created_at: string | null
+          device_id: string
+          error_message: string | null
+          id: string
+          mdvr_message: string
+          mqtt_topic: string
+          responded_at: string | null
+          response_message: string | null
+          sent_at: string | null
+          sent_by: string | null
+          session_id: string | null
+          status: string | null
+        }
+        Insert: {
+          command_type: string
+          created_at?: string | null
+          device_id: string
+          error_message?: string | null
+          id?: string
+          mdvr_message: string
+          mqtt_topic: string
+          responded_at?: string | null
+          response_message?: string | null
+          sent_at?: string | null
+          sent_by?: string | null
+          session_id?: string | null
+          status?: string | null
+        }
+        Update: {
+          command_type?: string
+          created_at?: string | null
+          device_id?: string
+          error_message?: string | null
+          id?: string
+          mdvr_message?: string
+          mqtt_topic?: string
+          responded_at?: string | null
+          response_message?: string | null
+          sent_at?: string | null
+          sent_by?: string | null
+          session_id?: string | null
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "device_commands_device_id_fkey"
+            columns: ["device_id"]
+            isOneToOne: false
+            referencedRelation: "devices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       devices: {
         Row: {
           created_at: string | null
@@ -244,6 +300,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      timeout_old_commands: { Args: never; Returns: undefined }
     }
     Enums: {
       app_role: "admin" | "customer"
