@@ -4,7 +4,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { User } from "@supabase/supabase-js";
 import Navbar from "@/components/Navbar";
 import DeviceCard from "@/components/DeviceCard";
-import AddDeviceDialog from "@/components/AddDeviceDialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Plus, Search, RefreshCcw } from "lucide-react";
@@ -14,8 +13,6 @@ import { useCMSV6Session, useCMSV6Vehicles } from "@/hooks/useCMSV6";
 
 const Dashboard = () => {
   const [user, setUser] = useState<User | null>(null);
-  const [devices, setDevices] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const navigate = useNavigate();
   const { t } = useTranslation();
@@ -32,7 +29,6 @@ const Dashboard = () => {
         return;
       }
       setUser(session.user);
-      fetchDevices(session.user.id);
     };
 
     checkAuth();
@@ -42,59 +38,11 @@ const Dashboard = () => {
         navigate("/auth");
       } else {
         setUser(session.user);
-        fetchDevices(session.user.id);
       }
     });
 
     return () => subscription.unsubscribe();
   }, [navigate]);
-
-  const fetchDevices = async (userId: string) => {
-    try {
-      // Fetch devices from local database
-      const { data: devicesData, error: devicesError } = await (supabase as any)
-        .from("devices")
-        .select("*")
-        .eq("owner_id", userId)
-        .order("created_at", { ascending: false });
-
-      if (devicesError) throw devicesError;
-
-      if (devicesData) {
-        const devicesWithDetails = await Promise.all(
-          devicesData.map(async (device: any) => {
-            const { data: telemetryData } = await (supabase as any)
-              .from("telemetry")
-              .select("*")
-              .eq("device_id", device.id)
-              .order("timestamp", { ascending: false })
-              .limit(1)
-              .maybeSingle();
-
-            const { data: subscriptionData } = await (supabase as any)
-              .from("subscriptions")
-              .select("*")
-              .eq("device_id", device.id)
-              .order("created_at", { ascending: false })
-              .limit(1)
-              .maybeSingle();
-
-            return {
-              ...device,
-              telemetry: telemetryData,
-              subscription: subscriptionData,
-            };
-          })
-        );
-
-        setDevices(devicesWithDetails);
-      }
-    } catch (error: any) {
-      toast.error("Error fetching devices: " + error.message);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const syncCMSV6Data = async () => {
     if (!jsession) {
@@ -105,27 +53,27 @@ const Dashboard = () => {
     
     try {
       await refetchVehicles();
-      if (user) {
-        await fetchDevices(user.id);
-      }
       toast.success("CMSV6 data synced successfully");
     } catch (error: any) {
       toast.error("Failed to sync CMSV6 data: " + error.message);
     }
   };
 
+  const devices = cmsv6Vehicles || [];
+  
   const filteredDevices = devices.filter(
     (device) =>
-      device.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      device.imei.toLowerCase().includes(searchQuery.toLowerCase())
+      (device.plate?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+       device.devIdno?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+       device.deviceNumber?.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
-  if (loading) {
+  if (sessionLoading || vehiclesLoading) {
     return (
       <div className="min-h-screen bg-gradient-dark">
         <Navbar />
         <div className="container mx-auto px-4 py-8 flex items-center justify-center">
-          <p className="text-muted-foreground">Loading ApexAuto devices...</p>
+          <p className="text-muted-foreground">Loading devices from CMSV6...</p>
         </div>
       </div>
     );
@@ -161,7 +109,13 @@ const Dashboard = () => {
                 <RefreshCcw className={`w-4 h-4 ${vehiclesLoading ? 'animate-spin' : ''}`} />
                 Sync CMSV6
               </Button>
-              <AddDeviceDialog onDeviceAdded={() => fetchDevices(user!.id)} />
+              <Button
+                onClick={() => navigate('/device-management')}
+                className="gap-2"
+              >
+                <Plus className="w-4 h-4" />
+                Add Device
+              </Button>
             </div>
           </div>
 
@@ -180,19 +134,36 @@ const Dashboard = () => {
           {filteredDevices.length === 0 ? (
             <div className="text-center py-16">
               <p className="text-muted-foreground mb-4">
-                {searchQuery ? t('dashboard.noDevices') : t('dashboard.noDevicesDesc')}
+                {searchQuery ? t('dashboard.noDevices') : 'No devices found in CMSV6'}
               </p>
-              <AddDeviceDialog onDeviceAdded={() => fetchDevices(user!.id)} />
+              <Button onClick={() => navigate('/device-management')} className="gap-2">
+                <Plus className="w-4 h-4" />
+                Add Device in CMSV6
+              </Button>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredDevices.map((device) => (
+              {filteredDevices.map((device, index) => (
                 <DeviceCard
-                  key={device.id}
-                  device={device}
-                  telemetry={device.telemetry}
-                  subscription={device.subscription}
-                  onClick={() => navigate(`/device/${device.id}`)}
+                  key={device.devIdno || device.id || index}
+                  device={{
+                    id: device.devIdno || device.id,
+                    name: device.plate || device.deviceNumber || 'Unknown Device',
+                    imei: device.devIdno || device.deviceNumber || 'N/A',
+                    model: device.model,
+                    status: device.state === 1 ? 'online' : 'offline',
+                    last_seen: device.gpsTime
+                  }}
+                  telemetry={{
+                    signal_strength: device.signal,
+                    battery_level: device.battery,
+                    gps_lat: device.mlat,
+                    gps_lon: device.mlng
+                  }}
+                  subscription={{
+                    status: device.state === 1 ? 'active' : 'inactive'
+                  }}
+                  onClick={() => navigate(`/device/${device.devIdno || device.id}`)}
                 />
               ))}
             </div>
