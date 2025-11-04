@@ -54,10 +54,16 @@ serve(async (req) => {
 
       case 'addDevice':
         endpoint = '/StandardApiAction_addDevice.action';
-        if (params.deviceNumber) queryParams.append('deviceNumber', params.deviceNumber);
-        if (params.deviceType) queryParams.append('deviceType', params.deviceType);
-        if (params.sim) queryParams.append('sim', params.sim);
-        if (params.companyId) queryParams.append('companyId', params.companyId);
+        if (params.devIdno) queryParams.append('devIdno', params.devIdno);
+        if (params.protocol) queryParams.append('protocol', params.protocol);
+        if (params.devType) queryParams.append('devType', params.devType);
+        if (params.companyName) queryParams.append('companyName', params.companyName);
+        if (params.factoryType) queryParams.append('factoryType', params.factoryType);
+        if (params.account) queryParams.append('account', params.account);
+        if (params.channelNum) queryParams.append('channelNum', params.channelNum);
+        if (params.model) queryParams.append('model', params.model);
+        if (params.factory) queryParams.append('factory', params.factory);
+        if (params.audioCodec) queryParams.append('audioCodec', params.audioCodec);
         break;
 
       case 'editDevice':
