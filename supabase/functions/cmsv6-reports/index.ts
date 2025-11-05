@@ -63,6 +63,15 @@ serve(async (req) => {
         if (params.pageRecords) queryParams.append('pageRecords', params.pageRecords);
         break;
 
+      case 'peopleDetail':
+        endpoint = '/PeopleAction_peopleDetail.action';
+        if (params.vehidnos) queryParams.append('vehidnos', params.vehidnos);
+        if (params.begintime) queryParams.append('begintime', params.begintime);
+        if (params.endtime) queryParams.append('endtime', params.endtime);
+        if (params.currentPage) queryParams.append('currentPage', params.currentPage);
+        if (params.pageRecords) queryParams.append('pageRecords', params.pageRecords);
+        break;
+
       default:
         throw new Error(`Unknown report type: ${reportType}`);
     }

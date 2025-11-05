@@ -64,7 +64,13 @@ serve(async (req) => {
     // Sync vehicles to our database
     if (data.vehicles && Array.isArray(data.vehicles)) {
       for (const vehicle of data.vehicles) {
-        const deviceImei = vehicle.deviceNumber || vehicle.deviceId;
+        const deviceImei = vehicle.deviceNumber || vehicle.deviceId || vehicle.devIdno;
+        
+        // Skip if no valid IMEI/device ID
+        if (!deviceImei) {
+          console.error(`[CMSV6] Skipping vehicle with no deviceNumber/deviceId:`, vehicle);
+          continue;
+        }
         
         // Check if device already exists
         const { data: existingDevice } = await supabaseClient

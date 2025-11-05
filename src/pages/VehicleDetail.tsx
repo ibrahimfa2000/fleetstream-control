@@ -12,8 +12,8 @@ import {
   ArrowLeft, Radio, Signal, Battery, MapPin, 
   PlayCircle, Video, RefreshCcw, Car, Calendar
 } from "lucide-react";
-import { formatDistanceToNow } from "date-fns";
-import { useCMSV6Session, useCMSV6Vehicles, useCMSV6LiveVideo, useCMSV6Telemetry } from "@/hooks/useCMSV6";
+import { formatDistanceToNow, format } from "date-fns";
+import { useCMSV6Session, useCMSV6Vehicles, useCMSV6LiveVideo, useCMSV6Telemetry, useCMSV6Reports } from "@/hooks/useCMSV6";
 
 const VehicleDetail = () => {
   const { id } = useParams();
@@ -21,6 +21,7 @@ const VehicleDetail = () => {
   const [vehicle, setVehicle] = useState<any>(null);
   const [telemetry, setTelemetry] = useState<any>(null);
   const [stream, setStream] = useState<any>(null);
+  const [passengerData, setPassengerData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
   
@@ -28,6 +29,7 @@ const VehicleDetail = () => {
   const { vehicles, refetch: refetchVehicles } = useCMSV6Vehicles(jsession);
   const { getLiveVideo } = useCMSV6LiveVideo();
   const { getTelemetry } = useCMSV6Telemetry();
+  const { getPeopleDetail } = useCMSV6Reports();
 
   useEffect(() => {
     if (vehicles && vehicles.length > 0) {
@@ -91,6 +93,29 @@ const VehicleDetail = () => {
       }
     } catch (error: any) {
       toast.error("Failed to load stream: " + error.message);
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const loadPassengerData = async () => {
+    if (!jsession || !vehicle?.plate) {
+      toast.error("CMSV6 session or vehicle plate not available");
+      return;
+    }
+    
+    setActionLoading(true);
+    try {
+      const endTime = format(new Date(), 'yyyy-MM-dd HH:mm:ss');
+      const startTime = format(new Date(Date.now() - 7 * 24 * 60 * 60 * 1000), 'yyyy-MM-dd HH:mm:ss');
+      
+      const data = await getPeopleDetail(jsession, vehicle.plate, startTime, endTime, 1, 20);
+      if (data) {
+        setPassengerData(data);
+        toast.success("Passenger data loaded");
+      }
+    } catch (error: any) {
+      toast.error("Failed to load passenger data: " + error.message);
     } finally {
       setActionLoading(false);
     }
@@ -177,9 +202,10 @@ const VehicleDetail = () => {
               </CardHeader>
               <CardContent>
                 <Tabs defaultValue="overview" className="w-full">
-                  <TabsList className="grid w-full grid-cols-3">
+                  <TabsList className="grid w-full grid-cols-4">
                     <TabsTrigger value="overview">Overview</TabsTrigger>
                     <TabsTrigger value="telemetry">Telemetry</TabsTrigger>
+                    <TabsTrigger value="passengers">Passengers</TabsTrigger>
                     <TabsTrigger value="stream">Live Stream</TabsTrigger>
                   </TabsList>
 
@@ -276,6 +302,87 @@ const VehicleDetail = () => {
                       </>
                     ) : (
                       <p className="text-muted-foreground text-center py-8">No telemetry data available</p>
+                    )}
+                  </TabsContent>
+
+                  <TabsContent value="passengers" className="mt-6 space-y-4">
+                    {passengerData ? (
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                          <h4 className="text-sm font-medium">Passenger Activity (Last 7 Days)</h4>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={loadPassengerData}
+                            disabled={actionLoading}
+                          >
+                            <RefreshCcw className={`w-3 h-3 ${actionLoading ? 'animate-spin' : ''}`} />
+                          </Button>
+                        </div>
+                        
+                        {passengerData.registration?.info && passengerData.registration.info.length > 0 ? (
+                          <div className="space-y-2">
+                            {passengerData.registration.info.map((record: any, idx: number) => (
+                              <Card key={idx} className="bg-secondary/30 border-border/50">
+                                <CardContent className="p-4">
+                                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm">
+                                    <div>
+                                      <p className="text-muted-foreground text-xs">Time</p>
+                                      <p className="font-medium">{record.sTimedtv || 'N/A'}</p>
+                                    </div>
+                                    <div>
+                                      <p className="text-muted-foreground text-xs">Driver</p>
+                                      <p className="font-medium">{record.driveName || 'Unknown'}</p>
+                                    </div>
+                                    <div>
+                                      <p className="text-muted-foreground text-xs">Total Passengers</p>
+                                      <p className="font-medium">{record.cd1People || 0}</p>
+                                    </div>
+                                    <div>
+                                      <p className="text-muted-foreground text-xs">Boarding (Front)</p>
+                                      <p className="font-medium text-success">{record.upPeople4 || 0}</p>
+                                    </div>
+                                    <div>
+                                      <p className="text-muted-foreground text-xs">Alighting (Front)</p>
+                                      <p className="font-medium text-destructive">{record.downPeople1 || 0}</p>
+                                    </div>
+                                    {record.eedu && record.wedu && (
+                                      <div>
+                                        <p className="text-muted-foreground text-xs">Location</p>
+                                        <p className="font-mono text-xs">{record.eedu}, {record.wedu}</p>
+                                      </div>
+                                    )}
+                                  </div>
+                                </CardContent>
+                              </Card>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="text-muted-foreground text-center py-4">No passenger data available</p>
+                        )}
+                        
+                        {passengerData.registration?.totalRecords > 0 && (
+                          <div className="text-sm text-muted-foreground text-center pt-2">
+                            Page {passengerData.registration.currentPage} of {passengerData.registration.totalPages} 
+                            ({passengerData.registration.totalRecords} total records)
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="text-center py-8">
+                        <p className="text-muted-foreground mb-4">No passenger counting data loaded</p>
+                        {jsession && vehicle?.plate && (
+                          <Button
+                            variant="outline"
+                            onClick={loadPassengerData}
+                            disabled={actionLoading}
+                            className="gap-2"
+                          >
+                            <RefreshCcw className={`w-4 h-4 ${actionLoading ? 'animate-spin' : ''}`} />
+                            Load Passenger Data
+                          </Button>
+                        )}
+                      </div>
                     )}
                   </TabsContent>
 

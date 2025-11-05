@@ -201,3 +201,67 @@ export const useCMSV6Alarms = () => {
 
   return { getAlarms };
 };
+
+export const useCMSV6Reports = () => {
+  const getReport = async (
+    jsession: string, 
+    reportType: string, 
+    params: {
+      deviceId?: string;
+      vehidnos?: string;
+      begintime?: string;
+      endtime?: string;
+      currentPage?: number;
+      pageRecords?: number;
+    }
+  ) => {
+    try {
+      const { data, error } = await supabase.functions.invoke('cmsv6-reports', {
+        body: { jsession, reportType, ...params },
+      });
+
+      if (error) throw error;
+
+      return data?.data || null;
+    } catch (err) {
+      console.error('CMSV6 reports error:', err);
+      throw err;
+    }
+  };
+
+  const getPeopleDetail = async (
+    jsession: string,
+    plateNumber: string,
+    begintime: string,
+    endtime: string,
+    currentPage?: number,
+    pageRecords?: number
+  ) => {
+    return getReport(jsession, 'peopleDetail', {
+      vehidnos: plateNumber,
+      begintime,
+      endtime,
+      currentPage,
+      pageRecords,
+    });
+  };
+
+  const getPassengerDetail = async (
+    jsession: string,
+    deviceId: string,
+    begintime: string,
+    endtime: string,
+    currentPage?: number,
+    pageRecords?: number
+  ) => {
+    return getReport(jsession, 'passengerDetail', {
+      deviceId,
+      begintime,
+      endtime,
+      currentPage,
+      pageRecords,
+    });
+  };
+
+  return { getReport, getPeopleDetail, getPassengerDetail };
+};
