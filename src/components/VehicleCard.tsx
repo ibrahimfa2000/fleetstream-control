@@ -1,110 +1,105 @@
-import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Radio, MapPin, Calendar, Signal, Battery } from "lucide-react";
-import { formatDistanceToNow } from "date-fns";
+import { Car, Info, Signal, Battery, Navigation, Clock } from "lucide-react";
 
 interface VehicleCardProps {
   vehicle: {
-    devIdno: string;
-    plate?: string;
-    deviceNumber?: string;
-    model?: string;
-    state?: number;
-    gpsTime?: string;
-    mlat?: number;
-    mlng?: number;
-    signal?: number;
-    battery?: number;
+    id: number;
+    nm: string; // vehicle name/number
+    dl?: Array<{
+      id: string; // device IMEI
+      sim?: string; // SIM number
+      ol?: number; // online status
+      md?: number; // model
+      gps?: number; // GPS status
+    }>;
+    status?: number;
+    pt?: string; // plate type
   };
   onClick: () => void;
 }
 
 const VehicleCard = ({ vehicle, onClick }: VehicleCardProps) => {
-  const isOnline = vehicle.state === 1;
-  const vehicleName = vehicle.plate || vehicle.deviceNumber || 'Unknown Vehicle';
+  const device = vehicle.dl?.[0]; // Get first device
   
-  const getStatusColor = (status: number) => {
-    return status === 1 
-      ? "bg-success/20 text-success border-success/30" 
-      : "bg-destructive/20 text-destructive border-destructive/30";
+  const getStatusColor = (onlineStatus?: number): "default" | "secondary" | "destructive" | "outline" => {
+    if (onlineStatus === 1) return "default"; // Online - green
+    if (onlineStatus === 2) return "secondary"; // Idle - yellow
+    return "destructive"; // Offline - red
+  };
+
+  const getStatusText = (onlineStatus?: number) => {
+    if (onlineStatus === 1) return "Online";
+    if (onlineStatus === 2) return "Idle";
+    return "Offline";
   };
 
   return (
     <Card 
-      className="group hover:shadow-lg transition-all duration-300 cursor-pointer bg-card/80 backdrop-blur-sm border-border/50 hover:border-primary/50"
+      className="cursor-pointer hover:shadow-lg transition-shadow bg-card/50 backdrop-blur-sm border-primary/20 hover:border-primary/40"
       onClick={onClick}
     >
-      <CardHeader className="pb-3">
+      <CardHeader>
         <div className="flex items-start justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center group-hover:bg-primary/30 transition-colors">
-              <Radio className="w-5 h-5 text-primary" />
-            </div>
-            <div>
-              <h3 className="font-semibold text-lg text-foreground group-hover:text-primary transition-colors">
-                {vehicleName}
-              </h3>
-              <p className="text-xs text-muted-foreground">
-                {vehicle.devIdno}
-              </p>
-            </div>
+          <div className="flex-1">
+            <CardTitle className="text-xl mb-2 flex items-center gap-2">
+              <Car className="w-5 h-5 text-primary" />
+              {vehicle.nm || vehicle.pt || `Vehicle ${vehicle.id}`}
+            </CardTitle>
+            <Badge variant={getStatusColor(device?.ol)}>
+              {getStatusText(device?.ol)}
+            </Badge>
           </div>
-          <Badge variant="outline" className={getStatusColor(vehicle.state || 0)}>
-            {isOnline ? 'Online' : 'Offline'}
-          </Badge>
         </div>
       </CardHeader>
-
       <CardContent className="space-y-3">
-        {vehicle.model && (
-          <div className="flex items-center justify-between text-sm">
-            <span className="text-muted-foreground">Model:</span>
-            <span className="font-medium text-foreground">{vehicle.model}</span>
-          </div>
+        {device && (
+          <>
+            <div className="flex items-center gap-2 text-sm">
+              <Info className="w-4 h-4 text-muted-foreground" />
+              <span className="text-muted-foreground">Device ID:</span>
+              <span className="font-medium text-xs">{device.id}</span>
+            </div>
+            
+            {device.sim && (
+              <div className="flex items-center gap-2 text-sm">
+                <Signal className="w-4 h-4 text-muted-foreground" />
+                <span className="text-muted-foreground">SIM:</span>
+                <span className="font-medium">{device.sim}</span>
+              </div>
+            )}
+            
+            {device.md && (
+              <div className="flex items-center gap-2 text-sm">
+                <Battery className="w-4 h-4 text-muted-foreground" />
+                <span className="text-muted-foreground">Model:</span>
+                <span className="font-medium">{device.md}</span>
+              </div>
+            )}
+            
+            {device.gps !== undefined && (
+              <div className="flex items-center gap-2 text-sm">
+                <Navigation className="w-4 h-4 text-muted-foreground" />
+                <span className="text-muted-foreground">GPS:</span>
+                <span className="font-medium">{device.gps === 1 ? 'Active' : 'Inactive'}</span>
+              </div>
+            )}
+          </>
         )}
-
-        {vehicle.signal !== undefined && (
+        
+        {vehicle.pt && (
           <div className="flex items-center gap-2 text-sm">
-            <Signal className="w-4 h-4 text-muted-foreground" />
-            <span className="text-muted-foreground">Signal:</span>
-            <span className="font-medium text-foreground">{vehicle.signal}%</span>
-          </div>
-        )}
-
-        {vehicle.battery !== undefined && (
-          <div className="flex items-center gap-2 text-sm">
-            <Battery className="w-4 h-4 text-muted-foreground" />
-            <span className="text-muted-foreground">Battery:</span>
-            <span className="font-medium text-foreground">{vehicle.battery}%</span>
-          </div>
-        )}
-
-        {vehicle.mlat && vehicle.mlng && (
-          <div className="flex items-center gap-2 text-sm">
-            <MapPin className="w-4 h-4 text-muted-foreground" />
-            <span className="text-muted-foreground">GPS:</span>
-            <span className="font-medium text-foreground text-xs">
-              {vehicle.mlat.toFixed(4)}, {vehicle.mlng.toFixed(4)}
-            </span>
-          </div>
-        )}
-
-        {vehicle.gpsTime && (
-          <div className="flex items-center gap-2 text-sm">
-            <Calendar className="w-4 h-4 text-muted-foreground" />
-            <span className="text-muted-foreground">Last seen:</span>
-            <span className="font-medium text-foreground text-xs">
-              {formatDistanceToNow(new Date(vehicle.gpsTime), { addSuffix: true })}
-            </span>
+            <Clock className="w-4 h-4 text-muted-foreground" />
+            <span className="text-muted-foreground">Plate Type:</span>
+            <span className="font-medium">{vehicle.pt}</span>
           </div>
         )}
       </CardContent>
-
-      <CardFooter className="pt-3 border-t border-border/50">
+      <CardFooter>
         <Button 
-          variant="ghost" 
-          className="w-full group-hover:bg-primary/10 group-hover:text-primary transition-colors"
+          variant="outline" 
+          className="w-full"
           onClick={(e) => {
             e.stopPropagation();
             onClick();

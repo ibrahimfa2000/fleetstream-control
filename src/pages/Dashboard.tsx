@@ -63,9 +63,9 @@ const Dashboard = () => {
   
   const filteredVehicles = vehicles.filter(
     (vehicle) =>
-      (vehicle.plate?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-       vehicle.devIdno?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-       vehicle.deviceNumber?.toLowerCase().includes(searchQuery.toLowerCase()))
+      (vehicle.nm?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+       vehicle.dl?.[0]?.id?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+       vehicle.dl?.[0]?.sim?.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
   if (sessionLoading || vehiclesLoading) {
@@ -145,9 +145,9 @@ const Dashboard = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredVehicles.map((vehicle, index) => (
                 <VehicleCard
-                  key={vehicle.devIdno || vehicle.id || index}
+                  key={vehicle.dl?.[0]?.id || vehicle.id || index}
                   vehicle={vehicle}
-                  onClick={() => navigate(`/vehicle/${vehicle.devIdno || vehicle.id}`)}
+                  onClick={() => navigate(`/vehicle/${vehicle.dl?.[0]?.id || vehicle.id}`)}
                 />
               ))}
             </div>
