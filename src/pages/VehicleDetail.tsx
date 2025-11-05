@@ -8,12 +8,17 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { 
-  ArrowLeft, Radio, Signal, Battery, MapPin, 
-  PlayCircle, Video, RefreshCcw, Car, Calendar
+import {
+  ArrowLeft, RefreshCcw, Car, Signal, Battery, MapPin, Video, PlayCircle
 } from "lucide-react";
 import { formatDistanceToNow, format } from "date-fns";
-import { useCMSV6Session, useCMSV6Vehicles, useCMSV6LiveVideo, useCMSV6Telemetry, useCMSV6Reports } from "@/hooks/useCMSV6";
+import {
+  useCMSV6Session,
+  useCMSV6Vehicles,
+  useCMSV6LiveVideo,
+  useCMSV6Telemetry,
+  useCMSV6Reports
+} from "@/hooks/useCMSV6";
 
 const VehicleDetail = () => {
   const { id } = useParams();
@@ -24,7 +29,7 @@ const VehicleDetail = () => {
   const [passengerData, setPassengerData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
-  
+
   const { jsession } = useCMSV6Session();
   const { vehicles, refetch: refetchVehicles } = useCMSV6Vehicles(jsession);
   const { getLiveVideo } = useCMSV6LiveVideo();
@@ -33,23 +38,19 @@ const VehicleDetail = () => {
 
   useEffect(() => {
     if (vehicles && vehicles.length > 0) {
-      const foundVehicle = vehicles.find(v => v.devIdno === id || v.id === id);
-      if (foundVehicle) {
-        setVehicle(foundVehicle);
-        setLoading(false);
-        
-        // Set telemetry from vehicle data
+      const found = vehicles.find((v) => v.dl[0].id.toString() === id);
+      if (found) {
+        setVehicle(found);
         setTelemetry({
-          signal_strength: foundVehicle.signal,
-          battery_level: foundVehicle.battery,
-          gps_lat: foundVehicle.mlat,
-          gps_lon: foundVehicle.mlng,
-          speed: foundVehicle.speed,
-          direction: foundVehicle.direction,
+          signal_strength: found.signal || found.status?.signal || null,
+          battery_level: found.battery || found.status?.battery || null,
+          gps_lat: found.weiDu,
+          gps_lon: found.jingDu,
+          speed: found.speed,
+          direction: found.direction,
         });
-      } else {
-        setLoading(false);
       }
+      setLoading(false);
     }
   }, [vehicles, id]);
 
@@ -58,18 +59,16 @@ const VehicleDetail = () => {
       toast.error("CMSV6 session not available");
       return;
     }
-    
+
     setActionLoading(true);
     try {
       await refetchVehicles();
-      
-      if (vehicle?.devIdno) {
-        const freshTelemetry = await getTelemetry(jsession, vehicle.devIdno);
-        if (freshTelemetry) {
-          setTelemetry(freshTelemetry);
-        }
+
+      if (vehicle?.dl[0].id) {
+        const freshTelemetry = await getTelemetry(jsession, vehicle.dl[0].id);
+        if (freshTelemetry) setTelemetry(freshTelemetry);
       }
-      
+
       toast.success("Data refreshed successfully");
     } catch (error: any) {
       toast.error("Failed to refresh data: " + error.message);
@@ -79,16 +78,16 @@ const VehicleDetail = () => {
   };
 
   const loadLiveStream = async () => {
-    if (!jsession || !vehicle?.devIdno) {
+    if (!jsession || !vehicle?.dl[0].id) {
       toast.error("CMSV6 session or vehicle ID not available");
       return;
     }
-    
+
     setActionLoading(true);
     try {
-      const streamUrl = await getLiveVideo(jsession, vehicle.devIdno, 0, 1);
+      const streamUrl = await getLiveVideo(jsession, vehicle.dl[0].id, 3, 1);
       if (streamUrl) {
-        setStream({ stream_url: streamUrl, stream_type: 'HLS' });
+        setStream({ stream_url: streamUrl, stream_type: "HLS" });
         toast.success("Live stream loaded");
       }
     } catch (error: any) {
@@ -99,21 +98,18 @@ const VehicleDetail = () => {
   };
 
   const loadPassengerData = async () => {
-    if (!jsession || !vehicle?.plate) {
-      toast.error("CMSV6 session or vehicle plate not available");
+    if (!jsession || !vehicle?.vehiName) {
+      toast.error("CMSV6 session or vehicle name not available");
       return;
     }
-    
+
     setActionLoading(true);
     try {
-      const endTime = format(new Date(), 'yyyy-MM-dd HH:mm:ss');
-      const startTime = format(new Date(Date.now() - 7 * 24 * 60 * 60 * 1000), 'yyyy-MM-dd HH:mm:ss');
-      
-      const data = await getPeopleDetail(jsession, vehicle.plate, startTime, endTime, 1, 20);
-      if (data) {
-        setPassengerData(data);
-        toast.success("Passenger data loaded");
-      }
+      const endTime = format(new Date(), "yyyy-MM-dd HH:mm:ss");
+      const startTime = format(new Date(Date.now() - 7 * 24 * 60 * 60 * 1000), "yyyy-MM-dd HH:mm:ss");
+      const data = await getPeopleDetail(jsession, vehicle.vehiName, startTime, endTime, 1, 20);
+      if (data) setPassengerData(data);
+      toast.success("Passenger data loaded");
     } catch (error: any) {
       toast.error("Failed to load passenger data: " + error.message);
     } finally {
@@ -136,9 +132,9 @@ const VehicleDetail = () => {
     return (
       <div className="min-h-screen bg-gradient-dark">
         <Navbar />
-        <div className="container mx-auto px-4 py-8">
-          <p className="text-muted-foreground text-center">Vehicle not found</p>
-          <Button onClick={() => navigate("/")} className="mt-4 mx-auto block">
+        <div className="container mx-auto px-4 py-8 text-center">
+          <p className="text-muted-foreground">Vehicle not found</p>
+          <Button onClick={() => navigate("/dashboard")} className="mt-4">
             Back to Dashboard
           </Button>
         </div>
@@ -146,339 +142,177 @@ const VehicleDetail = () => {
     );
   }
 
-  const isOnline = vehicle.state === 1;
-  const vehicleName = vehicle.plate || vehicle.deviceNumber || 'Unknown Vehicle';
+  const isOnline = vehicle.online === 1;
+  const vehicleName = vehicle.vehiName || vehicle.dl[0].id || "Unknown Vehicle";
 
   return (
     <div className="min-h-screen bg-gradient-dark">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_30%,rgba(213,175,55,0.08),transparent_60%)]" />
-      <div className="relative">
-        <Navbar />
-        <main className="container mx-auto px-4 py-8">
-          <Button
-            variant="ghost"
-            onClick={() => navigate("/")}
-            className="mb-6 gap-2"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Back to Dashboard
-          </Button>
+      <Navbar />
+      <main className="container mx-auto px-4 py-8">
+        <Button variant="ghost" onClick={() => navigate("/dashboard")} className="mb-6 gap-2">
+          <ArrowLeft className="w-4 h-4" /> Back
+        </Button>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Vehicle Info */}
-            <Card className="lg:col-span-2 bg-card/50 backdrop-blur-sm border-border/50">
-              <CardHeader>
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-lg bg-primary/20 flex items-center justify-center">
-                      <Car className="w-6 h-6 text-primary" />
-                    </div>
-                    <div>
-                      <CardTitle className="text-2xl">{vehicleName}</CardTitle>
-                      <p className="text-sm text-muted-foreground mt-1">
-                        Device ID: {vehicle.devIdno}
-                      </p>
-                      {jsession && (
-                        <p className="text-xs text-success mt-1">✓ CMSV6 Connected</p>
-                      )}
-                    </div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <Card className="lg:col-span-2 bg-card/50 backdrop-blur-sm border-border/50">
+            <CardHeader>
+              <div className="flex justify-between items-start">
+                <div className="flex gap-3 items-center">
+                  <div className="w-12 h-12 rounded-lg bg-primary/20 flex items-center justify-center">
+                    <Car className="w-6 h-6 text-primary" />
                   </div>
-                  <div className="flex flex-col gap-2 items-end">
-                    <Badge variant="outline" className={isOnline ? "bg-success/20 text-success border-success/30" : "bg-destructive/20 text-destructive border-destructive/30"}>
-                      {isOnline ? 'Online' : 'Offline'}
-                    </Badge>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={refreshData}
-                      disabled={actionLoading}
-                      className="gap-2 h-8 text-xs"
-                    >
-                      <RefreshCcw className={`w-3 h-3 ${actionLoading ? 'animate-spin' : ''}`} />
-                      Refresh
-                    </Button>
+                  <div>
+                    <CardTitle className="text-2xl">{vehicleName}</CardTitle>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Device ID: {vehicle.dl[0].id}
+                    </p>
+                    {jsession && <p className="text-xs text-success mt-1">✓ CMSV6 Connected</p>}
                   </div>
                 </div>
-              </CardHeader>
-              <CardContent>
-                <Tabs defaultValue="overview" className="w-full">
-                  <TabsList className="grid w-full grid-cols-4">
-                    <TabsTrigger value="overview">Overview</TabsTrigger>
-                    <TabsTrigger value="telemetry">Telemetry</TabsTrigger>
-                    <TabsTrigger value="passengers">Passengers</TabsTrigger>
-                    <TabsTrigger value="stream">Live Stream</TabsTrigger>
-                  </TabsList>
+                <div className="flex flex-col items-end gap-2">
+                  <Badge
+                    variant="outline"
+                    className={
+                      isOnline
+                        ? "bg-success/20 text-success border-success/30"
+                        : "bg-destructive/20 text-destructive border-destructive/30"
+                    }
+                  >
+                    {isOnline ? "Online" : "Offline"}
+                  </Badge>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={refreshData}
+                    disabled={actionLoading}
+                    className="gap-2 h-8 text-xs"
+                  >
+                    <RefreshCcw className={`w-3 h-3 ${actionLoading ? "animate-spin" : ""}`} />
+                    Refresh
+                  </Button>
+                </div>
+              </div>
+            </CardHeader>
 
-                  <TabsContent value="overview" className="space-y-4 mt-6">
-                    <div className="grid grid-cols-2 gap-4">
-                      {vehicle.model && (
-                        <div>
-                          <p className="text-sm text-muted-foreground">Model</p>
-                          <p className="font-medium">{vehicle.model}</p>
-                        </div>
-                      )}
-                      {vehicle.deviceNumber && (
-                        <div>
-                          <p className="text-sm text-muted-foreground">Device Number</p>
-                          <p className="font-medium">{vehicle.deviceNumber}</p>
-                        </div>
-                      )}
-                      {vehicle.plate && (
-                        <div>
-                          <p className="text-sm text-muted-foreground">Plate Number</p>
-                          <p className="font-medium">{vehicle.plate}</p>
-                        </div>
-                      )}
-                      {vehicle.gpsTime && (
-                        <div>
-                          <p className="text-sm text-muted-foreground">Last GPS Update</p>
-                          <p className="font-medium text-xs">
-                            {formatDistanceToNow(new Date(vehicle.gpsTime), { addSuffix: true })}
-                          </p>
-                        </div>
-                      )}
-                      {vehicle.speed !== undefined && (
-                        <div>
-                          <p className="text-sm text-muted-foreground">Speed</p>
-                          <p className="font-medium">{vehicle.speed} km/h</p>
-                        </div>
-                      )}
-                      {vehicle.direction !== undefined && (
-                        <div>
-                          <p className="text-sm text-muted-foreground">Direction</p>
-                          <p className="font-medium">{vehicle.direction}°</p>
-                        </div>
-                      )}
-                    </div>
-                  </TabsContent>
+            <CardContent>
+              <Tabs defaultValue="overview">
+                <TabsList className="grid grid-cols-4 w-full">
+                  <TabsTrigger value="overview">Overview</TabsTrigger>
+                  <TabsTrigger value="telemetry">Telemetry</TabsTrigger>
+                  <TabsTrigger value="passengers">Passengers</TabsTrigger>
+                  <TabsTrigger value="stream">Live Stream</TabsTrigger>
+                </TabsList>
 
-                  <TabsContent value="telemetry" className="mt-6 space-y-6">
-                    {telemetry ? (
-                      <>
-                        <div className="grid grid-cols-2 gap-4">
-                          {telemetry.signal_strength !== undefined && (
-                            <div className="flex items-center gap-3 p-4 rounded-lg bg-secondary/30">
-                              <Signal className="w-5 h-5 text-primary" />
-                              <div>
-                                <p className="text-sm text-muted-foreground">Signal Strength</p>
-                                <p className="font-semibold">{telemetry.signal_strength}%</p>
-                              </div>
-                            </div>
-                          )}
-                          {telemetry.battery_level !== undefined && (
-                            <div className="flex items-center gap-3 p-4 rounded-lg bg-secondary/30">
-                              <Battery className="w-5 h-5 text-primary" />
-                              <div>
-                                <p className="text-sm text-muted-foreground">Battery Level</p>
-                                <p className="font-semibold">{telemetry.battery_level}%</p>
-                              </div>
-                            </div>
-                          )}
-                          {telemetry.gps_lat && telemetry.gps_lon && (
-                            <div className="flex items-center gap-3 p-4 rounded-lg bg-secondary/30 col-span-2">
-                              <MapPin className="w-5 h-5 text-primary" />
-                              <div>
-                                <p className="text-sm text-muted-foreground">GPS Location</p>
-                                <p className="font-semibold text-xs">
-                                  {telemetry.gps_lat.toFixed(6)}, {telemetry.gps_lon.toFixed(6)}
-                                </p>
-                              </div>
-                            </div>
-                          )}
+                {/* --- Overview --- */}
+                <TabsContent value="overview" className="mt-6 grid grid-cols-2 gap-4">
+                  <Info label="Vehicle Type" value={vehicle.vehicleType} />
+                  <Info label="Driver" value={vehicle.driverName} />
+                  <Info label="Speed" value={`${vehicle.speed ?? 0} km/h`} />
+                  <Info label="Direction" value={`${vehicle.direction ?? "N/A"}°`} />
+                  <Info label="Last GPS" value={vehicle.gpsTime && formatDistanceToNow(new Date(vehicle.gpsTime), { addSuffix: true })} />
+                </TabsContent>
+
+                {/* --- Telemetry --- */}
+                <TabsContent value="telemetry" className="mt-6 space-y-4">
+                  {telemetry ? (
+                    <>
+                      <TelemetryItem icon={Signal} label="Signal" value={`${telemetry.signal_strength}%`} />
+                      <TelemetryItem icon={Battery} label="Battery" value={`${telemetry.battery_level}%`} />
+                      {telemetry.gps_lat && telemetry.gps_lon && (
+                        <div>
+                          <MapPin className="w-5 h-5 text-primary mb-1" />
+                          <DeviceMap lat={telemetry.gps_lat} lon={telemetry.gps_lon} deviceName={vehicleName} />
                         </div>
-                        {telemetry.gps_lat && telemetry.gps_lon && (
-                          <div>
-                            <h4 className="text-sm font-medium mb-3 flex items-center gap-2">
-                              <MapPin className="w-4 h-4 text-primary" />
-                              Live GPS Map
-                            </h4>
-                            <DeviceMap 
-                              lat={telemetry.gps_lat} 
-                              lon={telemetry.gps_lon}
-                              deviceName={vehicleName}
-                            />
-                          </div>
-                        )}
-                      </>
-                    ) : (
-                      <p className="text-muted-foreground text-center py-8">No telemetry data available</p>
-                    )}
-                  </TabsContent>
+                      )}
+                    </>
+                  ) : (
+                    <p className="text-muted-foreground text-center py-8">No telemetry data</p>
+                  )}
+                </TabsContent>
 
-                  <TabsContent value="passengers" className="mt-6 space-y-4">
-                    {passengerData ? (
-                      <div className="space-y-4">
-                        <div className="flex items-center justify-between">
-                          <h4 className="text-sm font-medium">Passenger Activity (Last 7 Days)</h4>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={loadPassengerData}
-                            disabled={actionLoading}
-                          >
-                            <RefreshCcw className={`w-3 h-3 ${actionLoading ? 'animate-spin' : ''}`} />
-                          </Button>
-                        </div>
-                        
-                        {passengerData.registration?.info && passengerData.registration.info.length > 0 ? (
-                          <div className="space-y-2">
-                            {passengerData.registration.info.map((record: any, idx: number) => (
-                              <Card key={idx} className="bg-secondary/30 border-border/50">
-                                <CardContent className="p-4">
-                                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm">
-                                    <div>
-                                      <p className="text-muted-foreground text-xs">Time</p>
-                                      <p className="font-medium">{record.sTimedtv || 'N/A'}</p>
-                                    </div>
-                                    <div>
-                                      <p className="text-muted-foreground text-xs">Driver</p>
-                                      <p className="font-medium">{record.driveName || 'Unknown'}</p>
-                                    </div>
-                                    <div>
-                                      <p className="text-muted-foreground text-xs">Total Passengers</p>
-                                      <p className="font-medium">{record.cd1People || 0}</p>
-                                    </div>
-                                    <div>
-                                      <p className="text-muted-foreground text-xs">Boarding (Front)</p>
-                                      <p className="font-medium text-success">{record.upPeople4 || 0}</p>
-                                    </div>
-                                    <div>
-                                      <p className="text-muted-foreground text-xs">Alighting (Front)</p>
-                                      <p className="font-medium text-destructive">{record.downPeople1 || 0}</p>
-                                    </div>
-                                    {record.eedu && record.wedu && (
-                                      <div>
-                                        <p className="text-muted-foreground text-xs">Location</p>
-                                        <p className="font-mono text-xs">{record.eedu}, {record.wedu}</p>
-                                      </div>
-                                    )}
-                                  </div>
-                                </CardContent>
-                              </Card>
-                            ))}
-                          </div>
-                        ) : (
-                          <p className="text-muted-foreground text-center py-4">No passenger data available</p>
-                        )}
-                        
-                        {passengerData.registration?.totalRecords > 0 && (
-                          <div className="text-sm text-muted-foreground text-center pt-2">
-                            Page {passengerData.registration.currentPage} of {passengerData.registration.totalPages} 
-                            ({passengerData.registration.totalRecords} total records)
-                          </div>
-                        )}
-                      </div>
-                    ) : (
-                      <div className="text-center py-8">
-                        <p className="text-muted-foreground mb-4">No passenger counting data loaded</p>
-                        {jsession && vehicle?.plate && (
-                          <Button
-                            variant="outline"
-                            onClick={loadPassengerData}
-                            disabled={actionLoading}
-                            className="gap-2"
-                          >
-                            <RefreshCcw className={`w-4 h-4 ${actionLoading ? 'animate-spin' : ''}`} />
-                            Load Passenger Data
-                          </Button>
-                        )}
-                      </div>
-                    )}
-                  </TabsContent>
-
-                  <TabsContent value="stream" className="mt-6">
-                    {stream && stream.stream_url ? (
-                      <StreamPlayer 
-                        streamUrl={stream.stream_url} 
-                        streamType={stream.stream_type}
-                      />
-                    ) : (
-                      <div className="text-center py-8">
-                        <Video className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
-                        <p className="text-muted-foreground mb-4">No live stream available</p>
-                        {jsession && (
-                          <Button
-                            variant="outline"
-                            onClick={loadLiveStream}
-                            disabled={actionLoading}
-                            className="gap-2"
-                          >
-                            <PlayCircle className="w-4 h-4" />
-                            Load Live Stream
-                          </Button>
-                        )}
-                      </div>
-                    )}
-                  </TabsContent>
-                </Tabs>
-              </CardContent>
-            </Card>
-
-            {/* Quick Stats */}
-            <div className="space-y-6">
-              <Card className="bg-card/50 backdrop-blur-sm border-border/50">
-                <CardHeader>
-                  <CardTitle className="text-lg">Vehicle Status</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">Connection</span>
-                    <Badge variant={isOnline ? "default" : "secondary"}>
-                      {isOnline ? "Online" : "Offline"}
-                    </Badge>
-                  </div>
-                  {vehicle.gpsTime && (
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">Last Update</span>
-                      <span className="text-sm font-medium">
-                        {formatDistanceToNow(new Date(vehicle.gpsTime), { addSuffix: true })}
-                      </span>
+                {/* --- Passengers --- */}
+                <TabsContent value="passengers" className="mt-6">
+                  {passengerData ? (
+                    <PassengerList data={passengerData} />
+                  ) : (
+                    <div className="text-center py-8">
+                      <Button onClick={loadPassengerData} variant="outline" disabled={actionLoading}>
+                        Load Passenger Data
+                      </Button>
                     </div>
                   )}
-                  {telemetry?.signal_strength !== undefined && (
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">Signal</span>
-                      <span className="text-sm font-medium">{telemetry.signal_strength}%</span>
-                    </div>
-                  )}
-                  {telemetry?.battery_level !== undefined && (
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">Battery</span>
-                      <span className="text-sm font-medium">{telemetry.battery_level}%</span>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
+                </TabsContent>
 
-              {telemetry?.gps_lat && telemetry?.gps_lon && (
-                <Card className="bg-card/50 backdrop-blur-sm border-border/50">
-                  <CardHeader>
-                    <CardTitle className="text-lg">Location Info</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-2">
-                    <div>
-                      <p className="text-sm text-muted-foreground">Latitude</p>
-                      <p className="font-mono text-sm">{telemetry.gps_lat.toFixed(6)}</p>
+                {/* --- Stream --- */}
+                <TabsContent value="stream" className="mt-6">
+                  {stream?.stream_url ? (
+                    <StreamPlayer streamUrl={stream.stream_url} streamType="HLS" />
+                  ) : (
+                    <div className="text-center py-8">
+                      <Video className="w-12 h-12 mx-auto mb-3 text-muted-foreground" />
+                      <p className="mb-3 text-muted-foreground">No live stream loaded</p>
+                      <Button onClick={loadLiveStream} variant="outline" disabled={actionLoading}>
+                        <PlayCircle className="w-4 h-4 mr-2" /> Load Live Stream
+                      </Button>
                     </div>
-                    <div>
-                      <p className="text-sm text-muted-foreground">Longitude</p>
-                      <p className="font-mono text-sm">{telemetry.gps_lon.toFixed(6)}</p>
-                    </div>
-                    {vehicle.speed !== undefined && (
-                      <div>
-                        <p className="text-sm text-muted-foreground">Speed</p>
-                        <p className="font-medium">{vehicle.speed} km/h</p>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              )}
-            </div>
-          </div>
-        </main>
-      </div>
+                  )}
+                </TabsContent>
+              </Tabs>
+            </CardContent>
+          </Card>
+
+          {/* Right Column: Stats */}
+          <Card className="bg-card/50 backdrop-blur-sm border-border/50">
+            <CardHeader>
+              <CardTitle className="text-lg">Vehicle Status</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Info label="Status" value={isOnline ? "Online" : "Offline"} />
+              <Info label="Speed" value={`${vehicle.speed ?? 0} km/h`} />
+              <Info label="Signal" value={`${telemetry?.signal_strength ?? "-"}%`} />
+              <Info label="Battery" value={`${telemetry?.battery_level ?? "-"}%`} />
+            </CardContent>
+          </Card>
+        </div>
+      </main>
     </div>
   );
 };
+
+const Info = ({ label, value }: { label: string; value: any }) => (
+  <div>
+    <p className="text-sm text-muted-foreground">{label}</p>
+    <p className="font-medium text-sm">{value ?? "N/A"}</p>
+  </div>
+);
+
+const TelemetryItem = ({ icon: Icon, label, value }: any) => (
+  <div className="flex items-center gap-3 p-4 bg-secondary/30 rounded-lg">
+    <Icon className="w-5 h-5 text-primary" />
+    <div>
+      <p className="text-sm text-muted-foreground">{label}</p>
+      <p className="font-semibold">{value}</p>
+    </div>
+  </div>
+);
+
+const PassengerList = ({ data }: any) => (
+  <div className="space-y-3">
+    {data.registration?.info?.map((rec: any, idx: number) => (
+      <Card key={idx} className="bg-secondary/30 border-border/50">
+        <CardContent className="p-3 text-sm">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+            <Info label="Time" value={rec.sTimedtv} />
+            <Info label="Driver" value={rec.driveName} />
+            <Info label="Total Passengers" value={rec.cd1People} />
+            <Info label="Boarding" value={rec.upPeople4} />
+            <Info label="Alighting" value={rec.downPeople1} />
+            {rec.eedu && rec.wedu && <Info label="Location" value={`${rec.eedu}, ${rec.wedu}`} />}
+          </div>
+        </CardContent>
+      </Card>
+    ))}
+  </div>
+);
 
 export default VehicleDetail;

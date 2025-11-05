@@ -48,6 +48,8 @@
     "date-fns": "^3.6.0",
     "emailjs-com": "^3.2.0",
     "embla-carousel-react": "^8.6.0",
+    "flv.js": "^1.6.2",
+    "hls.js": "^1.6.14",
     "i18next": "^25.5.3",
     "input-otp": "^1.4.2",
     "leaflet": "^1.9.4",

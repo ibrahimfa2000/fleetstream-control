@@ -127,7 +127,7 @@ export const useCMSV6Vehicles = (jsession: string | null) => {
 };
 
 export const useCMSV6LiveVideo = () => {
-  const getLiveVideo = async (jsession: string, deviceId: string, channel = 0, streamType = 1) => {
+  const getLiveVideo = async (jsession: string, deviceId: string, channel: number, streamType: number) => {
     try {
       const { data, error } = await supabase.functions.invoke('cmsv6-live-video', {
         body: { jsession, deviceId, channel, streamType },
