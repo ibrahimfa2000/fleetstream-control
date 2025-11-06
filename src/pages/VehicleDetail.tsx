@@ -19,6 +19,7 @@ import {
   useCMSV6Telemetry,
   useCMSV6Reports
 } from "@/hooks/useCMSV6";
+import FLVPlayer from "@/components/FLVPlayer";
 
 const VehicleDetail = () => {
   const { id } = useParams();
@@ -77,25 +78,42 @@ const VehicleDetail = () => {
     }
   };
 
-  const loadLiveStream = async () => {
-    if (!jsession || !vehicle?.dl[0].id) {
-      toast.error("CMSV6 session or vehicle ID not available");
-      return;
-    }
+const loadLiveStream = async () => {
+  if (!jsession || !vehicle?.dl[0].id) {
+    toast.error("CMSV6 session or vehicle ID not available");
+    return;
+  }
 
-    setActionLoading(true);
-    try {
-      const streamUrl = await getLiveVideo(jsession, vehicle.dl[0].id, 3, 1);
-      if (streamUrl) {
-        setStream({ stream_url: streamUrl, stream_type: "HLS" });
-        toast.success("Live stream loaded");
-      }
-    } catch (error: any) {
-      toast.error("Failed to load stream: " + error.message);
-    } finally {
-      setActionLoading(false);
+  setActionLoading(true);
+  try {
+    // Fetch up to 4 channels
+    const channelPromises = [1, 2, 3, 4].map(ch =>
+      getLiveVideo(jsession, vehicle.dl[0].id, ch, 1)
+    );
+
+    const results = await Promise.allSettled(channelPromises);
+
+    const validStreams = results
+      .filter(r => r.status === "fulfilled" && (r as any).value)
+      .map((r, i) => ({
+        stream_url: (r as any).value,
+        channel: i + 1,
+        stream_type: "HLS"
+      }));
+
+    if (validStreams.length > 0) {
+      setStream(validStreams);
+      toast.success(`Loaded ${validStreams.length} stream${validStreams.length > 1 ? "s" : ""}`);
+    } else {
+      toast.error("No valid streams found");
     }
-  };
+  } catch (error: any) {
+    toast.error("Failed to load streams: " + error.message);
+  } finally {
+    setActionLoading(false);
+  }
+};
+
 
   const loadPassengerData = async () => {
     if (!jsession || !vehicle?.vehiName) {
@@ -245,14 +263,24 @@ const VehicleDetail = () => {
 
                 {/* --- Stream --- */}
                 <TabsContent value="stream" className="mt-6">
-                  {stream?.stream_url ? (
-                    <StreamPlayer streamUrl={stream.stream_url} streamType="HLS" />
+                  {stream?.length > 0 ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {stream.map((s: any) => (
+                        <div key={s.channel} className="relative rounded-lg overflow-hidden bg-black">
+                          <div className="absolute top-2 left-2 z-10 bg-black/60 text-white text-xs px-2 py-1 rounded">
+                            Channel {s.channel}
+                          </div>
+                          {/* <StreamPlayer streamUrl={s.stream_url} streamType={s.stream_type} /> */}
+                          <FLVPlayer url={s.stream_url} />
+                        </div>
+                      ))}
+                    </div>
                   ) : (
                     <div className="text-center py-8">
                       <Video className="w-12 h-12 mx-auto mb-3 text-muted-foreground" />
-                      <p className="mb-3 text-muted-foreground">No live stream loaded</p>
+                      <p className="mb-3 text-muted-foreground">No live streams loaded</p>
                       <Button onClick={loadLiveStream} variant="outline" disabled={actionLoading}>
-                        <PlayCircle className="w-4 h-4 mr-2" /> Load Live Stream
+                        <PlayCircle className="w-4 h-4 mr-2" /> Load All Channels
                       </Button>
                     </div>
                   )}

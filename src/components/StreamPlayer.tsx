@@ -11,66 +11,82 @@ interface StreamPlayerProps {
 
 const StreamPlayer = ({ streamUrl, streamType }: StreamPlayerProps) => {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const hlsRef = useRef<Hls | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isReconnecting, setIsReconnecting] = useState(false);
-  const hlsRef = useRef<Hls | null>(null);
+  const retryTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const isHLS = streamUrl?.toLowerCase().includes(".m3u8");
 
   const setupHls = () => {
     if (!videoRef.current || !isHLS) return;
+
+    // Clean up existing instance
+    hlsRef.current?.destroy();
+    hlsRef.current = null;
+
     const hls = new Hls({
-      maxBufferLength: 10,
-      liveSyncDurationCount: 3,
-      fragLoadingMaxRetry: 5,
-      manifestLoadingMaxRetry: 5,
+      liveSyncDuration: 2,
+      liveMaxLatencyDuration: 4,
+      maxLiveSyncPlaybackRate: 1.2,
+      maxBufferLength: 5,
+      maxBufferSize: 30 * 1000 * 1000,
+      backBufferLength: 5,
+      lowLatencyMode: true,
       enableWorker: true,
+      fragLoadingTimeOut: 10000,
+      manifestLoadingTimeOut: 10000,
+      fragLoadingMaxRetry: 3,
+      manifestLoadingMaxRetry: 3,
+      startFragPrefetch: true,
     });
 
     hls.loadSource(streamUrl);
     hls.attachMedia(videoRef.current);
 
+    hls.on(Hls.Events.MANIFEST_PARSED, () => {
+      console.log("HLS manifest parsed, ready to play.");
+      setError(null);
+    });
+
     hls.on(Hls.Events.ERROR, (_, data) => {
       console.error("HLS error:", data);
+      if (!data.fatal) return;
 
-      if (data.fatal) {
-        switch (data.type) {
-          case Hls.ErrorTypes.NETWORK_ERROR:
-            setIsReconnecting(true);
-            hls.startLoad();
-            setTimeout(() => setIsReconnecting(false), 1500);
-            break;
-          case Hls.ErrorTypes.MEDIA_ERROR:
-            setIsReconnecting(true);
-            hls.recoverMediaError();
-            setTimeout(() => setIsReconnecting(false), 1500);
-            break;
-          default:
-            setIsReconnecting(true);
-            setError("Stream interrupted, reconnecting...");
-            hls.destroy();
-            setTimeout(() => {
-              setupHls();
-              setIsReconnecting(false);
-            }, 2000);
-            break;
-        }
-      } else {
-        // Non-fatal: mediaError, levelLoadTimeOut, etc.
-        if (data.details?.includes("fragParsingError")) {
-          console.warn("Skipping bad fragment, continuing...");
-        }
+      switch (data.type) {
+        case Hls.ErrorTypes.NETWORK_ERROR:
+          reconnect("Network error, retrying...");
+          break;
+        case Hls.ErrorTypes.MEDIA_ERROR:
+          reconnect("Media error, recovering...", () => hls.recoverMediaError());
+          break;
+        default:
+          reconnect("Critical error, reloading stream...", setupHls);
+          break;
       }
     });
 
     hlsRef.current = hls;
   };
 
+  const reconnect = (msg: string, action?: () => void) => {
+    setIsReconnecting(true);
+    setError(msg);
+
+    if (retryTimeoutRef.current) clearTimeout(retryTimeoutRef.current);
+
+    retryTimeoutRef.current = setTimeout(() => {
+      action ? action() : setupHls();
+      setIsReconnecting(false);
+    }, 2000);
+  };
+
   useEffect(() => {
     if (isHLS && Hls.isSupported()) {
       setupHls();
-    } else if (videoRef.current && videoRef.current.canPlayType("application/vnd.apple.mpegurl")) {
+    } else if (videoRef.current?.canPlayType("application/vnd.apple.mpegurl")) {
+      // Native Safari support
       videoRef.current.src = streamUrl;
     } else {
       setError("This browser does not support HLS playback.");
@@ -79,6 +95,7 @@ const StreamPlayer = ({ streamUrl, streamType }: StreamPlayerProps) => {
     return () => {
       hlsRef.current?.destroy();
       hlsRef.current = null;
+      if (retryTimeoutRef.current) clearTimeout(retryTimeoutRef.current);
     };
   }, [streamUrl]);
 
@@ -89,8 +106,8 @@ const StreamPlayer = ({ streamUrl, streamType }: StreamPlayerProps) => {
       await videoRef.current.play();
       setIsPlaying(true);
     } catch (err) {
-      setError("Failed to play stream. Please check the stream URL.");
       console.error("Playback error:", err);
+      setError("Failed to play stream. Please check the stream URL.");
     }
   };
 
@@ -107,7 +124,9 @@ const StreamPlayer = ({ streamUrl, streamType }: StreamPlayerProps) => {
         <video
           ref={videoRef}
           className="w-full h-full"
+          type="application/x-mpegURL"
           controls
+          playsInline
           onPlay={() => setIsPlaying(true)}
           onPause={() => setIsPlaying(false)}
         />
@@ -131,7 +150,9 @@ const StreamPlayer = ({ streamUrl, streamType }: StreamPlayerProps) => {
 
       <div className="text-xs text-muted-foreground">
         <p>Stream URL: {streamUrl}</p>
-        <p>Type: {isHLS ? "HLS" : "HTTP"} {streamType ? `(${streamType})` : ""}</p>
+        <p>
+          Type: {isHLS ? "HLS" : "HTTP"} {streamType ? `(${streamType})` : ""}
+        </p>
       </div>
     </div>
   );
