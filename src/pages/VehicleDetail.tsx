@@ -17,7 +17,8 @@ import {
   useCMSV6Vehicles,
   useCMSV6LiveVideo,
   useCMSV6Telemetry,
-  useCMSV6Reports
+  useCMSV6Reports,
+  useCMSV6TrackDevice
 } from "@/hooks/useCMSV6";
 import FLVPlayer from "@/components/FLVPlayer";
 
@@ -28,6 +29,7 @@ const VehicleDetail = () => {
   const [telemetry, setTelemetry] = useState<any>(null);
   const [stream, setStream] = useState<any>(null);
   const [passengerData, setPassengerData] = useState<any>(null);
+  const [GPSDetails, setGPSDetails] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
 
@@ -36,13 +38,15 @@ const VehicleDetail = () => {
   const { getLiveVideo } = useCMSV6LiveVideo();
   const { getTelemetry } = useCMSV6Telemetry();
   const { getPeopleDetail } = useCMSV6Reports();
+  const { getGPSDetails } = useCMSV6TrackDevice();
 
   useEffect(() => {
     if (vehicles && vehicles.length > 0) {
       const found = vehicles.find((v) => v.dl[0].id.toString() === id);
       if (found) {
         setVehicle(found);
-        setTelemetry({
+        if(GPSDetails){
+ setTelemetry({
           signal_strength: found.signal || found.status?.signal || null,
           battery_level: found.battery || found.status?.battery || null,
           gps_lat: found.weiDu,
@@ -50,6 +54,8 @@ const VehicleDetail = () => {
           speed: found.speed,
           direction: found.direction,
         });
+        }
+       
       }
       setLoading(false);
     }
@@ -96,9 +102,9 @@ const loadLiveStream = async () => {
     const validStreams = results
       .filter(r => r.status === "fulfilled" && (r as any).value)
       .map((r, i) => ({
-        stream_url: (r as any).value,
+        streamUrl: (r as any).value,
         channel: i + 1,
-        stream_type: "HLS"
+        stream_type: 1
       }));
 
     if (validStreams.length > 0) {
@@ -114,7 +120,23 @@ const loadLiveStream = async () => {
   }
 };
 
+  const loadGPSData = async () => {
+    if (!jsession) {
+      toast.error("CMSV6 session not available");
+      return;
+    }
 
+    setActionLoading(true);
+    try {
+      const data = await getGPSDetails(jsession, vehicle.dl[0].id);
+      if (data) setGPSDetails(data);
+      toast.success("Passenger data loaded");
+    } catch (error: any) {
+      toast.error("Failed to load passenger data: " + error.message);
+    } finally {
+      setActionLoading(false);
+    }
+  };
   const loadPassengerData = async () => {
     if (!jsession || !vehicle?.vehiName) {
       toast.error("CMSV6 session or vehicle name not available");
@@ -160,9 +182,10 @@ const loadLiveStream = async () => {
     );
   }
 
-  const isOnline = vehicle.online === 1;
+  const isOnline = GPSDetails?.[0]?.ol === 1;
   const vehicleName = vehicle.vehiName || vehicle.dl[0].id || "Unknown Vehicle";
-
+  const GPSInfo = GPSDetails[0];
+  console.log("GPSDetails:", GPSInfo);
   return (
     <div className="min-h-screen bg-gradient-dark">
       <Navbar />
@@ -232,19 +255,25 @@ const loadLiveStream = async () => {
 
                 {/* --- Telemetry --- */}
                 <TabsContent value="telemetry" className="mt-6 space-y-4">
-                  {telemetry ? (
+                  {GPSInfo ? (
                     <>
-                      <TelemetryItem icon={Signal} label="Signal" value={`${telemetry.signal_strength}%`} />
-                      <TelemetryItem icon={Battery} label="Battery" value={`${telemetry.battery_level}%`} />
-                      {telemetry.gps_lat && telemetry.gps_lon && (
+                      <TelemetryItem icon={Signal} label="Signal" value={`${GPSInfo.net == 3 ? '4G' : '22%'}`} />
+                      <TelemetryItem icon={Battery} label="Battery" value={`${GPSInfo.battery_level}%`} />
+                      {GPSInfo.mlat && GPSInfo.mlng && (
                         <div>
                           <MapPin className="w-5 h-5 text-primary mb-1" />
-                          <DeviceMap lat={telemetry.gps_lat} lon={telemetry.gps_lon} deviceName={vehicleName} />
+                          <DeviceMap lat={GPSInfo.mlat} lon={GPSInfo.mlng} deviceName={vehicleName} />
                         </div>
                       )}
                     </>
                   ) : (
+                    <>
                     <p className="text-muted-foreground text-center py-8">No telemetry data</p>
+                    <Button onClick={loadGPSData} variant="outline" disabled={actionLoading}>
+                        Load GPS Data
+                      </Button>
+                    </>
+                    
                   )}
                 </TabsContent>
 
@@ -271,7 +300,7 @@ const loadLiveStream = async () => {
                             Channel {s.channel}
                           </div>
                           {/* <StreamPlayer streamUrl={s.stream_url} streamType={s.stream_type} /> */}
-                          <FLVPlayer url={s.stream_url} />
+                          <FLVPlayer url={s.streamUrl} />
                         </div>
                       ))}
                     </div>
@@ -296,8 +325,8 @@ const loadLiveStream = async () => {
             </CardHeader>
             <CardContent>
               <Info label="Status" value={isOnline ? "Online" : "Offline"} />
-              <Info label="Speed" value={`${vehicle.speed ?? 0} km/h`} />
-              <Info label="Signal" value={`${telemetry?.signal_strength ?? "-"}%`} />
+              <Info label="Speed" value={`${GPSInfo.sp ?? 0} km/h`} />
+              <Info label="Signal" value={`${GPSInfo?.net == '3' ? "4G": 'WIFI'} `} />
               <Info label="Battery" value={`${telemetry?.battery_level ?? "-"}%`} />
             </CardContent>
           </Card>

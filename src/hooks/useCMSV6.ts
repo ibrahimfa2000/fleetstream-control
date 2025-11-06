@@ -145,17 +145,17 @@ export const useCMSV6LiveVideo = () => {
   return { getLiveVideo };
 };
 export const useCMSV6TrackDevice = () => {
-  const getGPSDetails = async (jsession: string, deviceId: string, channel: number, streamType: number) => {
+  const getGPSDetails = async (jsession: string, deviceId: string) => {
     try {
       const { data, error } = await supabase.functions.invoke('cmsv6-device-track', {
-        body: { jsession, deviceId, channel, streamType },
+        body: { jsession, deviceId },
       });
 
       if (error) throw error;
 
-      return data?.streamUrl || null;
+      return data.track?.status || null;
     } catch (err) {
-      console.error('CMSV6 live video error:', err);
+      console.error('CMSV6track error:', err);
       throw err;
     }
   };
