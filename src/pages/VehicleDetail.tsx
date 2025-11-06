@@ -184,7 +184,7 @@ const loadLiveStream = async () => {
 
   const isOnline = GPSDetails?.[0]?.ol === 1;
   const vehicleName = vehicle.vehiName || vehicle.dl[0].id || "Unknown Vehicle";
-  const GPSInfo = GPSDetails[0];
+  const GPSInfo = GPSDetails?.[0];
   console.log("GPSDetails:", GPSInfo);
   return (
     <div className="min-h-screen bg-gradient-dark">
