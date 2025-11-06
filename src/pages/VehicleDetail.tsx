@@ -325,7 +325,7 @@ const loadLiveStream = async () => {
             </CardHeader>
             <CardContent>
               <Info label="Status" value={isOnline ? "Online" : "Offline"} />
-              <Info label="Speed" value={`${GPSInfo.sp ?? 0} km/h`} />
+              <Info label="Speed" value={`${GPSInfo?.sp ?? 0} km/h`} />
               <Info label="Signal" value={`${GPSInfo?.net == '3' ? "4G": 'WIFI'} `} />
               <Info label="Battery" value={`${telemetry?.battery_level ?? "-"}%`} />
             </CardContent>
