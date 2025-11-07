@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import {
-  ArrowLeft, RefreshCcw, Car, Signal, Battery, MapPin, Video, PlayCircle
+  ArrowLeft, RefreshCcw, Car, Signal, Battery, MapPin, Video, PlayCircle, ParkingCircle
 } from "lucide-react";
 import { formatDistanceToNow, format } from "date-fns";
 import {
@@ -93,7 +93,7 @@ const loadLiveStream = async () => {
   setActionLoading(true);
   try {
     // Fetch up to 4 channels
-    const channelPromises = [1, 2, 3, 4].map(ch =>
+    const channelPromises = [0, 1, 2, 3].map(ch =>
       getLiveVideo(jsession, vehicle.dl[0].id, ch, 1)
     );
 
@@ -138,7 +138,7 @@ const loadLiveStream = async () => {
     }
   };
   const loadPassengerData = async () => {
-    if (!jsession || !vehicle?.vehiName) {
+    if (!jsession || !vehicle?.nm) {
       toast.error("CMSV6 session or vehicle name not available");
       return;
     }
@@ -147,7 +147,7 @@ const loadLiveStream = async () => {
     try {
       const endTime = format(new Date(), "yyyy-MM-dd HH:mm:ss");
       const startTime = format(new Date(Date.now() - 7 * 24 * 60 * 60 * 1000), "yyyy-MM-dd HH:mm:ss");
-      const data = await getPeopleDetail(jsession, vehicle.vehiName, startTime, endTime, 1, 20);
+      const data = await getPeopleDetail(jsession, vehicle.nm, startTime, endTime, 1, 20);
       if (data) setPassengerData(data);
       toast.success("Passenger data loaded");
     } catch (error: any) {
@@ -258,7 +258,7 @@ const loadLiveStream = async () => {
                   {GPSInfo ? (
                     <>
                       <TelemetryItem icon={Signal} label="Signal" value={`${GPSInfo.net == 3 ? '4G' : '22%'}`} />
-                      <TelemetryItem icon={Battery} label="Battery" value={`${GPSInfo.battery_level}%`} />
+                      <TelemetryItem icon={ParkingCircle} label="Parking" value={`${GPSInfo.pk/60} min ago`} />
                       {GPSInfo.mlat && GPSInfo.mlng && (
                         <div>
                           <MapPin className="w-5 h-5 text-primary mb-1" />
@@ -352,24 +352,37 @@ const TelemetryItem = ({ icon: Icon, label, value }: any) => (
     </div>
   </div>
 );
+const PassengerList = ({ data }: any) => {
+  const records = data?.infos || [];
 
-const PassengerList = ({ data }: any) => (
-  <div className="space-y-3">
-    {data.registration?.info?.map((rec: any, idx: number) => (
-      <Card key={idx} className="bg-secondary/30 border-border/50">
-        <CardContent className="p-3 text-sm">
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-            <Info label="Time" value={rec.sTimedtv} />
-            <Info label="Driver" value={rec.driveName} />
-            <Info label="Total Passengers" value={rec.cd1People} />
-            <Info label="Boarding" value={rec.upPeople4} />
-            <Info label="Alighting" value={rec.downPeople1} />
-            {rec.eedu && rec.wedu && <Info label="Location" value={`${rec.eedu}, ${rec.wedu}`} />}
-          </div>
-        </CardContent>
-      </Card>
-    ))}
-  </div>
-);
+  if (!records.length) {
+    return <p className="text-sm text-muted-foreground">No passenger records found.</p>;
+  }
 
+  return (
+    <div className="space-y-3">
+      {records.map((rec: any, idx: number) => (
+        <Card key={idx} className="bg-secondary/30 border-border/50">
+          <CardContent className="p-3 text-sm">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+              <Info label="Time" value={rec.bTimeStr} />
+              <Info label="Vehicle" value={rec.vehiIdno} />
+              <Info label="Company" value={rec.companyName} />
+              <Info label="Total Passengers" value={rec.curPeople} />
+              <Info label="Boarding (Front)" value={rec.upPeople1} />
+              <Info label="Boarding (Middle)" value={rec.upPeople2} />
+              <Info label="Boarding (Back)" value={rec.upPeople3} />
+              <Info label="Alighting (Front)" value={rec.downPeople1} />
+              <Info label="Alighting (Middle)" value={rec.downPeople2} />
+              <Info label="Alighting (Back)" value={rec.downPeople3} />
+              {(rec.weidu && rec.jindu) && (
+                <Info label="Location" value={`${rec.weidu / 1e6}, ${rec.jindu / 1e6}`} />
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      ))}
+    </div>
+  );
+};
 export default VehicleDetail;

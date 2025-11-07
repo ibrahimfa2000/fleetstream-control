@@ -225,7 +225,7 @@ export const useCMSV6Reports = () => {
     reportType: string, 
     params: {
       deviceId?: string;
-      vehidnos?: string;
+      vehiIdnos?: string;
       begintime?: string;
       endtime?: string;
       currentPage?: number;
@@ -255,7 +255,7 @@ export const useCMSV6Reports = () => {
     pageRecords?: number
   ) => {
     return getReport(jsession, 'peopleDetail', {
-      vehidnos: plateNumber,
+      vehiIdnos: plateNumber,
       begintime,
       endtime,
       currentPage,

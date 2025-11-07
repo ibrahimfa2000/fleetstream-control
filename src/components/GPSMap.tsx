@@ -64,7 +64,7 @@ L.control.layers(baseLayers).addTo(map)
       const marker = L.marker([lat, lon]).addTo(map)
       if (deviceName) {
         marker
-          .bindPopup(`<b>${deviceName}</b><br>Lat: ${lat.toFixed(6)}<br>Lon: ${lon.toFixed(6)}`)
+          .bindPopup(`<b>${deviceName}</b><br>Lat: ${lat?.toFixed(6)}<br>Lon: ${lon?.toFixed(6)}`)
           .openPopup()
       }
 
