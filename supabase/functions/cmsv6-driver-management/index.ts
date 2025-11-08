@@ -29,10 +29,10 @@ serve(async (req) => {
       throw new Error('Unauthorized');
     }
 
-    const { jsession, action, ...params } = await req.json();
+    const { jsession, action, params } = await req.json();
 
-    if (!jsession || !action) {
-      throw new Error('Session token and action required');
+    if (!jsession) {
+      throw new Error('CMSV6 session token required');
     }
 
     const CMSV6_API_URL = Deno.env.get('CMSV6_API_URL');
@@ -42,81 +42,95 @@ serve(async (req) => {
 
     console.log(`[CMSV6] Driver management action: ${action}`);
 
-    let endpoint = '';
+    let apiUrl = '';
     const queryParams = new URLSearchParams();
     queryParams.append('jsession', jsession);
 
     switch (action) {
-      case 'findByDeviceId':
-        endpoint = '/StandardApiAction_findDriverInfoByDeviceId.action';
-        if (params.deviceId) queryParams.append('deviceId', params.deviceId);
-        break;
-
-      case 'findVehicleByDeviceId':
-        endpoint = '/StandardApiAction_findVehicleInfoByDeviceId.action';
-        if (params.deviceId) queryParams.append('deviceId', params.deviceId);
-        break;
-
-      case 'findByLicense':
-        endpoint = '/StandardApiAction_findVehicleInfoByDeviceJn.action';
-        if (params.jn) queryParams.append('jn', params.jn);
-        break;
-
-      case 'queryPunchDetail':
-        endpoint = '/StandardApiAction_queryDriverPunchDetail.action';
-        if (params.deviceId) queryParams.append('deviceId', params.deviceId);
-        if (params.begintime) queryParams.append('begintime', params.begintime);
-        if (params.endtime) queryParams.append('endtime', params.endtime);
-        break;
-
-      case 'queryAlarm':
-        endpoint = '/StandardApiAction_queryIdentifyAlarm.action';
-        if (params.deviceId) queryParams.append('deviceId', params.deviceId);
-        if (params.begintime) queryParams.append('begintime', params.begintime);
-        if (params.endtime) queryParams.append('endtime', params.endtime);
-        break;
-
       case 'list':
-        endpoint = '/StandardApiAction_qureyDriverList.action';
-        if (params.companyId) queryParams.append('companyId', params.companyId);
+        apiUrl = `${CMSV6_API_URL}/StandardApiAction_driverList.action`;
         if (params.currentPage) queryParams.append('currentPage', params.currentPage);
         if (params.pageRecords) queryParams.append('pageRecords', params.pageRecords);
         break;
 
       case 'add':
-        endpoint = '/StandardApiAction_addDriver.action';
-        if (params.driverName) queryParams.append('driverName', encodeURIComponent(params.driverName));
-        if (params.licenseNumber) queryParams.append('licenseNumber', params.licenseNumber);
+      case 'modify':
+        apiUrl = `${CMSV6_API_URL}/StandardApiAction_mergeDriver.action`;
+        if (params.id) queryParams.append('id', params.id);
+        if (params.name) queryParams.append('name', params.name);
+        if (params.IDCard) queryParams.append('IDCard', params.IDCard);
+        if (params.licenseNum) queryParams.append('licenseNum', params.licenseNum);
         if (params.phone) queryParams.append('phone', params.phone);
-        if (params.companyId) queryParams.append('companyId', params.companyId);
+        if (params.address) queryParams.append('address', params.address);
+        if (params.qualification) queryParams.append('qualification', params.qualification);
         break;
 
       case 'find':
-        endpoint = '/StandardApiAction_findDriver.action';
-        if (params.driverId) queryParams.append('driverId', params.driverId);
+        apiUrl = `${CMSV6_API_URL}/StandardApiAction_findDriver.action`;
+        if (params.id) queryParams.append('id', params.id);
         break;
 
       case 'delete':
-        endpoint = '/StandardApiAction_deleteDriver.action';
-        if (params.driverId) queryParams.append('driverId', params.driverId);
+        apiUrl = `${CMSV6_API_URL}/StandardApiAction_deleteDriver.action`;
+        if (params.id) queryParams.append('id', params.id);
+        break;
+
+      case 'queryByDevice':
+        apiUrl = `${CMSV6_API_URL}/StandardApiAction_driverByDevNo.action`;
+        if (params.devIdno) queryParams.append('devIdno', params.devIdno);
+        break;
+
+      case 'queryByCard':
+        apiUrl = `${CMSV6_API_URL}/StandardApiAction_driverByInfo.action`;
+        if (params.qualification) queryParams.append('qualification', params.qualification);
+        if (params.licenseNum) queryParams.append('licenseNum', params.licenseNum);
+        break;
+
+      case 'punchRecords':
+        apiUrl = `${CMSV6_API_URL}/StandardApiAction_clockRecordList.action`;
+        if (params.devIdno) queryParams.append('devIdno', params.devIdno);
+        if (params.begintime) queryParams.append('begintime', params.begintime);
+        if (params.endtime) queryParams.append('endtime', params.endtime);
+        if (params.currentPage) queryParams.append('currentPage', params.currentPage);
+        if (params.pageRecords) queryParams.append('pageRecords', params.pageRecords);
+        break;
+
+      case 'identifyAlarms':
+        apiUrl = `${CMSV6_API_URL}/StandardApiAction_identifyAlarm.action`;
+        if (params.devIdno) queryParams.append('devIdno', params.devIdno);
+        if (params.begintime) queryParams.append('begintime', params.begintime);
+        if (params.endtime) queryParams.append('endtime', params.endtime);
+        if (params.currentPage) queryParams.append('currentPage', params.currentPage);
+        if (params.pageRecords) queryParams.append('pageRecords', params.pageRecords);
         break;
 
       default:
-        throw new Error(`Unknown action: ${action}`);
+        throw new Error(`Unknown driver management action: ${action}`);
     }
 
-    const apiUrl = `${CMSV6_API_URL}${endpoint}?${queryParams.toString()}`;
-    const response = await fetch(apiUrl);
+    const response = await fetch(`${apiUrl}?${queryParams.toString()}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`CMSV6 API request failed: ${response.statusText}`);
+    }
+
     const data = await response.json();
 
     if (data.result !== 0) {
-      throw new Error(data.description || `Failed to ${action} driver`);
+      throw new Error(data.description || `Driver ${action} failed`);
     }
+
+    console.log(`[CMSV6] Driver ${action} completed successfully`);
 
     return new Response(
       JSON.stringify({
         success: true,
-        data: data
+        data: data,
       }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
