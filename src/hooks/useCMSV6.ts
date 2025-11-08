@@ -272,14 +272,14 @@ export const useCMSV6Reports = () => {
 
   const getPassengerDetail = async (
     jsession: string,
-    deviceId: string,
+    plateNumber: string,
     begintime: string,
     endtime: string,
     currentPage?: number,
     pageRecords?: number
   ) => {
     return getReport(jsession, 'passengerDetail', {
-      deviceId,
+      vehiIdnos: plateNumber,
       begintime,
       endtime,
       currentPage,
@@ -287,5 +287,96 @@ export const useCMSV6Reports = () => {
     });
   };
 
-  return { getReport, getPeopleDetail, getPassengerDetail };
+  const getPassengerSummary = async (
+    jsession: string,
+    plateNumber: string,
+    begintime: string,
+    endtime: string,
+    currentPage?: number,
+    pageRecords?: number
+  ) => {
+    return getReport(jsession, 'passengerSummary', {
+      vehiIdnos: plateNumber,
+      begintime,
+      endtime,
+      currentPage,
+      pageRecords,
+    });
+  };
+
+  return { getReport, getPeopleDetail, getPassengerDetail, getPassengerSummary };
+};
+
+export const useCMSV6SIMManagement = () => {
+  const mergeSIM = async (jsession: string, params: any) => {
+    try {
+      const { data, error } = await supabase.functions.invoke('cmsv6-sim-management', {
+        body: { jsession, action: 'merge', params },
+      });
+
+      if (error) throw error;
+      return data;
+    } catch (err) {
+      console.error('CMSV6 merge SIM error:', err);
+      throw err;
+    }
+  };
+
+  const findSIM = async (jsession: string, id: string) => {
+    try {
+      const { data, error } = await supabase.functions.invoke('cmsv6-sim-management', {
+        body: { jsession, action: 'find', params: { id } },
+      });
+
+      if (error) throw error;
+      return data?.data?.sim || null;
+    } catch (err) {
+      console.error('CMSV6 find SIM error:', err);
+      throw err;
+    }
+  };
+
+  const deleteSIM = async (jsession: string, id: string) => {
+    try {
+      const { data, error } = await supabase.functions.invoke('cmsv6-sim-management', {
+        body: { jsession, action: 'delete', params: { id } },
+      });
+
+      if (error) throw error;
+      return data;
+    } catch (err) {
+      console.error('CMSV6 delete SIM error:', err);
+      throw err;
+    }
+  };
+
+  const listSIMs = async (jsession: string, currentPage?: number, pageRecords?: number) => {
+    try {
+      const { data, error } = await supabase.functions.invoke('cmsv6-sim-management', {
+        body: { jsession, action: 'list', params: { currentPage, pageRecords } },
+      });
+
+      if (error) throw error;
+      return data?.data || null;
+    } catch (err) {
+      console.error('CMSV6 list SIMs error:', err);
+      throw err;
+    }
+  };
+
+  const unbindSIM = async (jsession: string, id: string, flag?: number) => {
+    try {
+      const { data, error } = await supabase.functions.invoke('cmsv6-sim-management', {
+        body: { jsession, action: 'unbind', params: { id, flag } },
+      });
+
+      if (error) throw error;
+      return data;
+    } catch (err) {
+      console.error('CMSV6 unbind SIM error:', err);
+      throw err;
+    }
+  };
+
+  return { mergeSIM, findSIM, deleteSIM, listSIMs, unbindSIM };
 };

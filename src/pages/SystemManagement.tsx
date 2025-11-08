@@ -8,21 +8,24 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { Settings, UserCog, Shield, CreditCard, Plus, Edit, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { useCMSV6Session } from "@/hooks/useCMSV6";
+import { useCMSV6Session, useCMSV6SIMManagement } from "@/hooks/useCMSV6";
 import { useUserRole } from "@/hooks/useUserRole";
 
 const SystemManagement = () => {
   const { jsession } = useCMSV6Session();
   const { isAdmin } = useUserRole();
+  const { mergeSIM, deleteSIM, listSIMs, unbindSIM } = useCMSV6SIMManagement();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     username: "",
     password: "",
     email: "",
     roleName: "",
-    iccid: "",
+    cardNum: "",
+    companyName: "",
     operator: "",
-    planType: ""
+    city: "",
+    remark: ""
   });
 
   const handleUserAction = async (action: string) => {
@@ -87,25 +90,48 @@ const SystemManagement = () => {
       return;
     }
 
+    if (action === 'merge' && (!formData.cardNum || !formData.companyName)) {
+      toast.error("Card Number and Company Name are required");
+      return;
+    }
+
     setLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke('cmsv6-sim-management', {
-        body: {
-          jsession,
-          action,
-          iccid: formData.iccid,
-          operator: formData.operator,
-          planType: formData.planType
-        }
-      });
+      let result;
+      switch (action) {
+        case 'merge':
+          result = await mergeSIM(jsession, {
+            cardNum: formData.cardNum,
+            companyName: formData.companyName,
+            operator: formData.operator,
+            city: formData.city,
+            remark: formData.remark,
+            status: 1
+          });
+          toast.success("SIM card added/updated successfully");
+          setFormData({ ...formData, cardNum: "", companyName: "", operator: "", city: "", remark: "" });
+          break;
 
-      if (error) throw error;
-      toast.success(`SIM ${action} completed successfully`);
-      setFormData({ ...formData, iccid: "", operator: "", planType: "" });
+        case 'list':
+          result = await listSIMs(jsession, 1, 10);
+          console.log("SIM list:", result);
+          toast.success("SIM list retrieved successfully - check console");
+          break;
+
+        case 'delete':
+          if (!formData.cardNum) {
+            toast.error("Card Number is required for deletion");
+            return;
+          }
+          toast.info("Please provide SIM ID to delete");
+          break;
+
+        default:
+          toast.error("Unknown action");
+      }
     } catch (error: any) {
       toast.error(`SIM ${action} failed: ` + error.message);
     } finally {
-      setLoading(false);
     }
   };
 
@@ -268,12 +294,21 @@ const SystemManagement = () => {
                 <CardContent className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="iccid">ICCID</Label>
+                      <Label htmlFor="cardNum">Card Number (ICCID)</Label>
                       <Input
-                        id="iccid"
-                        value={formData.iccid}
-                        onChange={(e) => setFormData({ ...formData, iccid: e.target.value })}
-                        placeholder="Enter SIM ICCID"
+                        id="cardNum"
+                        value={formData.cardNum}
+                        onChange={(e) => setFormData({ ...formData, cardNum: e.target.value })}
+                        placeholder="Enter SIM card number"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="companyName">Company Name</Label>
+                      <Input
+                        id="companyName"
+                        value={formData.companyName}
+                        onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
+                        placeholder="Enter company name"
                       />
                     </div>
                     <div className="space-y-2">
@@ -286,17 +321,26 @@ const SystemManagement = () => {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="planType">Plan Type</Label>
+                      <Label htmlFor="city">City</Label>
                       <Input
-                        id="planType"
-                        value={formData.planType}
-                        onChange={(e) => setFormData({ ...formData, planType: e.target.value })}
-                        placeholder="Enter plan type"
+                        id="city"
+                        value={formData.city}
+                        onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+                        placeholder="Enter issuing city"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="remark">Remark</Label>
+                      <Input
+                        id="remark"
+                        value={formData.remark}
+                        onChange={(e) => setFormData({ ...formData, remark: e.target.value })}
+                        placeholder="Enter remark (optional)"
                       />
                     </div>
                   </div>
                   <div className="flex gap-2">
-                    <Button onClick={() => handleSimAction('create')} disabled={loading || !jsession}>
+                    <Button onClick={() => handleSimAction('merge')} disabled={loading || !jsession}>
                       <Plus className="w-4 h-4 mr-2" />
                       Add SIM
                     </Button>

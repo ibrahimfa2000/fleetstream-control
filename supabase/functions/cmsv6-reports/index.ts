@@ -48,24 +48,26 @@ serve(async (req) => {
 
     switch (reportType) {
       case 'passengerSummary':
-        endpoint = '/StandardApiAction_passengerSummary.action';
-        if (params.deviceId) queryParams.append('deviceId', params.deviceId);
+        endpoint = '/PeopleAction_peopleSummary.action';
         if (params.begintime) queryParams.append('begintime', params.begintime);
         if (params.endtime) queryParams.append('endtime', params.endtime);
+        if (params.vehiIdnos) queryParams.append('vehiIdnos', params.vehiIdnos);
+        if (params.currentPage) queryParams.append('currentPage', params.currentPage);
+        if (params.pageRecords) queryParams.append('pageRecords', params.pageRecords);
         break;
 
       case 'passengerDetail':
-        endpoint = '/StandardApiAction_passengerDetail.action';
-        if (params.deviceId) queryParams.append('deviceId', params.deviceId);
+        endpoint = '/PeopleAction_peopleDetail.action';
         if (params.begintime) queryParams.append('begintime', params.begintime);
         if (params.endtime) queryParams.append('endtime', params.endtime);
+        if (params.vehiIdnos) queryParams.append('vehiIdnos', params.vehiIdnos);
         if (params.currentPage) queryParams.append('currentPage', params.currentPage);
         if (params.pageRecords) queryParams.append('pageRecords', params.pageRecords);
         break;
 
       case 'peopleDetail':
         endpoint = '/PeopleAction_peopleDetail.action';
-        if (params.vehidnos) queryParams.append('vehidnos', params.vehidnos);
+        if (params.vehiIdnos) queryParams.append('vehiIdnos', params.vehiIdnos);
         if (params.begintime) queryParams.append('begintime', params.begintime);
         if (params.endtime) queryParams.append('endtime', params.endtime);
         if (params.currentPage) queryParams.append('currentPage', params.currentPage);
