@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import StreamPlayer from "@/components/StreamPlayer";
 import { DeviceMap } from "@/components/GPSMap";
@@ -25,6 +25,7 @@ import FLVPlayer from "@/components/FLVPlayer";
 const VehicleDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const [vehicle, setVehicle] = useState<any>(null);
   const [telemetry, setTelemetry] = useState<any>(null);
   const [stream, setStream] = useState<any>(null);
@@ -32,6 +33,9 @@ const VehicleDetail = () => {
   const [GPSDetails, setGPSDetails] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
+
+  // Access GPSData that was passed through navigate
+  const GPSData = location.state?.GPSData;
 
   const { jsession } = useCMSV6Session();
   const { vehicles, refetch: refetchVehicles } = useCMSV6Vehicles(jsession);
@@ -45,15 +49,8 @@ const VehicleDetail = () => {
       const found = vehicles.find((v) => v.dl[0].id.toString() === id);
       if (found) {
         setVehicle(found);
-        if(GPSDetails){
- setTelemetry({
-          signal_strength: found.signal || found.status?.signal || null,
-          battery_level: found.battery || found.status?.battery || null,
-          gps_lat: found.weiDu,
-          gps_lon: found.jingDu,
-          speed: found.speed,
-          direction: found.direction,
-        });
+        if(GPSData){
+        setGPSDetails(GPSData);
         }
        
       }
@@ -224,7 +221,7 @@ const loadLiveStream = async () => {
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={refreshData}
+                    onClick={loadGPSData}
                     disabled={actionLoading}
                     className="gap-2 h-8 text-xs"
                   >
@@ -250,7 +247,7 @@ const loadLiveStream = async () => {
                   <Info label="Driver" value={vehicle.driverName} />
                   <Info label="Speed" value={`${vehicle.speed ?? 0} km/h`} />
                   <Info label="Direction" value={`${vehicle.direction ?? "N/A"}°`} />
-                  <Info label="Last GPS" value={vehicle.gpsTime && formatDistanceToNow(new Date(vehicle.gpsTime), { addSuffix: true })} />
+                  <Info label="Last GPS" value={vehicle.ps && formatDistanceToNow(new Date(GPSInfo.ps), { addSuffix: true })} />
                 </TabsContent>
 
                 {/* --- Telemetry --- */}
@@ -258,7 +255,7 @@ const loadLiveStream = async () => {
                   {GPSInfo ? (
                     <>
                       <TelemetryItem icon={Signal} label="Signal" value={`${GPSInfo.net == 3 ? '4G' : '22%'}`} />
-                      <TelemetryItem icon={ParkingCircle} label="Parking" value={`${GPSInfo.pk/60} min ago`} />
+                      <TelemetryItem icon={ParkingCircle} label="Parking" value={`${(GPSInfo.pk/60).toFixed()} min ago`} />
                       {GPSInfo.mlat && GPSInfo.mlng && (
                         <div>
                           <MapPin className="w-5 h-5 text-primary mb-1" />

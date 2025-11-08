@@ -19,7 +19,7 @@ const Dashboard = () => {
   
   // CMSV6 integration
   const { jsession, isLoading: sessionLoading, error: sessionError, refreshSession } = useCMSV6Session();
-  const { vehicles: cmsv6Vehicles, isLoading: vehiclesLoading, refetch: refetchVehicles } = useCMSV6Vehicles(jsession);
+  const { vehicles: cmsv6Vehicles, GPSData ,isLoading: vehiclesLoading, refetch: refetchVehicles } = useCMSV6Vehicles(jsession);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -147,7 +147,8 @@ const Dashboard = () => {
                 <VehicleCard
                   key={vehicle.dl?.[0]?.id || vehicle.id || index}
                   vehicle={vehicle}
-                  onClick={() => navigate(`/vehicle/${vehicle.dl?.[0]?.id || vehicle.id}`)}
+                  telemntry={GPSData}
+                  onClick={() => navigate(`/vehicle/${vehicle.dl?.[0]?.id || vehicle.id}`, { state: { GPSData } })}
                 />
               ))}
             </div>

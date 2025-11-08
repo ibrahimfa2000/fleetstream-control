@@ -94,7 +94,9 @@ export const useCMSV6Session = () => {
 
 export const useCMSV6Vehicles = (jsession: string | null) => {
   const [vehicles, setVehicles] = useState<any[]>([]);
+  const [GPSData, setGPSData] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const { getGPSDetails } = useCMSV6TrackDevice();
   const [error, setError] = useState<string | null>(null);
 
   const fetchVehicles = async () => {
@@ -111,6 +113,11 @@ export const useCMSV6Vehicles = (jsession: string | null) => {
       if (fetchError) throw fetchError;
 
       setVehicles(data?.data?.vehicles || []);
+      getGPSDetails(jsession, data?.data?.vehicles[0]?.dl?.[0]?.id || '').then(gpsData => {
+        console.log('Fetched GPS details for first vehicle:', gpsData);
+        setGPSData(gpsData || []);
+      })
+
     } catch (err) {
       console.error('CMSV6 vehicles fetch error:', err);
       setError(err instanceof Error ? err.message : 'Failed to fetch vehicles');
@@ -123,7 +130,7 @@ export const useCMSV6Vehicles = (jsession: string | null) => {
     fetchVehicles();
   }, [jsession]);
 
-  return { vehicles, isLoading, error, refetch: fetchVehicles };
+  return { vehicles, isLoading, GPSData, error, refetch: fetchVehicles };
 };
 
 export const useCMSV6LiveVideo = () => {

@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Car, Info, Signal, Battery, Navigation, Clock } from "lucide-react";
 
 interface VehicleCardProps {
+  telemntry?: any;
   vehicle: {
     id: number;
     nm: string; // vehicle name/number
@@ -20,7 +21,7 @@ interface VehicleCardProps {
   onClick: () => void;
 }
 
-const VehicleCard = ({ vehicle, onClick }: VehicleCardProps) => {
+const VehicleCard = ({ telemntry, vehicle, onClick }: VehicleCardProps) => {
   const device = vehicle.dl?.[0]; // Get first device
   
   const getStatusColor = (onlineStatus?: number): "default" | "secondary" | "destructive" | "outline" => {
@@ -47,8 +48,8 @@ const VehicleCard = ({ vehicle, onClick }: VehicleCardProps) => {
               <Car className="w-5 h-5 text-primary" />
               {vehicle.nm || vehicle.pt || `Vehicle ${vehicle.id}`}
             </CardTitle>
-            <Badge variant={getStatusColor(device?.ol)}>
-              {getStatusText(device?.ol)}
+            <Badge variant={getStatusColor(telemntry?.[0]?.ol)}>
+              {getStatusText(telemntry?.[0]?.ol)}
             </Badge>
           </div>
         </div>
@@ -82,7 +83,7 @@ const VehicleCard = ({ vehicle, onClick }: VehicleCardProps) => {
               <div className="flex items-center gap-2 text-sm">
                 <Navigation className="w-4 h-4 text-muted-foreground" />
                 <span className="text-muted-foreground">GPS:</span>
-                <span className="font-medium">{device.gps === 1 ? 'Active' : 'Inactive'}</span>
+                <span className="font-medium">{telemntry?.[0]?.ps ? telemntry?.[0]?.ps : 'Inactive'}</span>
               </div>
             )}
           </>
@@ -91,8 +92,8 @@ const VehicleCard = ({ vehicle, onClick }: VehicleCardProps) => {
         {vehicle.pt && (
           <div className="flex items-center gap-2 text-sm">
             <Clock className="w-4 h-4 text-muted-foreground" />
-            <span className="text-muted-foreground">Plate Type:</span>
-            <span className="font-medium">{vehicle.pt}</span>
+            <span className="text-muted-foreground">last update:</span>
+            <span className="font-medium">{telemntry?.[0]?.gt}</span>
           </div>
         )}
       </CardContent>
