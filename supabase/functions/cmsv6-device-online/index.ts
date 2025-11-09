@@ -29,7 +29,7 @@ serve(async (req) => {
       throw new Error('Unauthorized');
     }
 
-    const { jsession, action, params } = await req.json();
+    const { jsession, devIdno, vehiIdno, status } = await req.json();
 
     if (!jsession) {
       throw new Error('CMSV6 session token required');
@@ -40,30 +40,17 @@ serve(async (req) => {
       throw new Error('CMSV6 API URL not configured');
     }
 
-    console.log(`[CMSV6] Traffic card action: ${action}`);
+    console.log(`[CMSV6] Getting device online status`);
 
-    let apiUrl = '';
     const queryParams = new URLSearchParams();
     queryParams.append('jsession', jsession);
+    if (devIdno) queryParams.append('devIdno', devIdno);
+    if (vehiIdno) queryParams.append('vehiIdno', vehiIdno);
+    if (status !== undefined) queryParams.append('status', status.toString());
 
-    switch (action) {
-      case 'getInfo':
-        apiUrl = `${CMSV6_API_URL}/StandardApiAction_getFlowInfo.action`;
-        if (params.devIdno) queryParams.append('devIdno', params.devIdno);
-        break;
+    const apiUrl = `${CMSV6_API_URL}/StandardApiAction_getDeviceOlStatus.action?${queryParams.toString()}`;
 
-      case 'saveConfig':
-        apiUrl = `${CMSV6_API_URL}/StandardApiAction_saveFlowThreshold.action`;
-        if (params.devIdno) queryParams.append('devIdno', params.devIdno);
-        if (params.monthFlow) queryParams.append('monthFlow', params.monthFlow);
-        if (params.warnFlow) queryParams.append('warnFlow', params.warnFlow);
-        break;
-
-      default:
-        throw new Error(`Unknown traffic card action: ${action}`);
-    }
-
-    const response = await fetch(`${apiUrl}?${queryParams.toString()}`, {
+    const response = await fetch(apiUrl, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -77,15 +64,13 @@ serve(async (req) => {
     const data = await response.json();
 
     if (data.result !== 0) {
-      throw new Error(data.description || `Traffic card ${action} failed`);
+      throw new Error(data.description || 'Failed to get device online status');
     }
-
-    console.log(`[CMSV6] Traffic card ${action} completed successfully`);
 
     return new Response(
       JSON.stringify({
         success: true,
-        data: data,
+        onlines: data.onlines || [],
       }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -94,10 +79,10 @@ serve(async (req) => {
     );
 
   } catch (error) {
-    console.error('[CMSV6] Traffic card error:', error);
+    console.error('[CMSV6] Device online status error:', error);
     return new Response(
       JSON.stringify({ 
-        error: error instanceof Error ? error.message : 'Traffic card operation failed',
+        error: error instanceof Error ? error.message : 'Failed to get device online status',
         success: false
       }),
       { 

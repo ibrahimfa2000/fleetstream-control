@@ -29,10 +29,10 @@ serve(async (req) => {
       throw new Error('Unauthorized');
     }
 
-    const { jsession, action, ...params } = await req.json();
+    const { jsession, action, params } = await req.json();
 
-    if (!jsession || !action) {
-      throw new Error('Session token and action required');
+    if (!jsession) {
+      throw new Error('CMSV6 session token required');
     }
 
     const CMSV6_API_URL = Deno.env.get('CMSV6_API_URL');
@@ -42,57 +42,71 @@ serve(async (req) => {
 
     console.log(`[CMSV6] Area management action: ${action}`);
 
-    let endpoint = '';
+    let apiUrl = '';
     const queryParams = new URLSearchParams();
     queryParams.append('jsession', jsession);
 
     switch (action) {
       case 'list':
-        endpoint = '/StandardApiAction_areaInfo.action';
-        if (params.companyId) queryParams.append('companyId', params.companyId);
+        apiUrl = `${CMSV6_API_URL}/StandardApiAction_areaAll.action`;
         break;
 
       case 'add':
-        endpoint = '/StandardApiAction_addArea.action';
-        if (params.areaName) queryParams.append('areaName', encodeURIComponent(params.areaName));
-        if (params.areaType) queryParams.append('areaType', params.areaType);
-        if (params.points) queryParams.append('points', params.points);
-        if (params.companyId) queryParams.append('companyId', params.companyId);
+        apiUrl = `${CMSV6_API_URL}/StandardApiAction_saveArea.action`;
+        if (params.nm) queryParams.append('nm', params.nm);
+        if (params.tp) queryParams.append('tp', params.tp);
+        if (params.pts) queryParams.append('pts', params.pts);
+        if (params.speed) queryParams.append('speed', params.speed);
+        if (params.time) queryParams.append('time', params.time);
         break;
 
-      case 'edit':
-        endpoint = '/StandardApiAction_editArea.action';
-        if (params.areaId) queryParams.append('areaId', params.areaId);
-        if (params.areaName) queryParams.append('areaName', encodeURIComponent(params.areaName));
-        if (params.points) queryParams.append('points', params.points);
+      case 'modify':
+        apiUrl = `${CMSV6_API_URL}/StandardApiAction_updateArea.action`;
+        if (params.id) queryParams.append('id', params.id);
+        if (params.nm) queryParams.append('nm', params.nm);
+        if (params.tp) queryParams.append('tp', params.tp);
+        if (params.pts) queryParams.append('pts', params.pts);
+        if (params.speed) queryParams.append('speed', params.speed);
+        if (params.time) queryParams.append('time', params.time);
         break;
 
       case 'view':
-        endpoint = '/StandardApiAction_findArea.action';
-        if (params.areaId) queryParams.append('areaId', params.areaId);
+        apiUrl = `${CMSV6_API_URL}/StandardApiAction_findArea.action`;
+        if (params.id) queryParams.append('id', params.id);
         break;
 
       case 'delete':
-        endpoint = '/StandardApiAction_deleteArea.action';
-        if (params.areaId) queryParams.append('areaId', params.areaId);
+        apiUrl = `${CMSV6_API_URL}/StandardApiAction_delArea.action`;
+        if (params.id) queryParams.append('id', params.id);
         break;
 
       default:
-        throw new Error(`Unknown action: ${action}`);
+        throw new Error(`Unknown area management action: ${action}`);
     }
 
-    const apiUrl = `${CMSV6_API_URL}${endpoint}?${queryParams.toString()}`;
-    const response = await fetch(apiUrl);
+    const response = await fetch(`${apiUrl}?${queryParams.toString()}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`CMSV6 API request failed: ${response.statusText}`);
+    }
+
     const data = await response.json();
 
     if (data.result !== 0) {
-      throw new Error(data.description || `Failed to ${action} area`);
+      throw new Error(data.description || `Area ${action} failed`);
     }
+
+    console.log(`[CMSV6] Area ${action} completed successfully`);
 
     return new Response(
       JSON.stringify({
         success: true,
-        data: data
+        data: data,
       }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },

@@ -29,10 +29,10 @@ serve(async (req) => {
       throw new Error('Unauthorized');
     }
 
-    const { jsession, action, ...params } = await req.json();
+    const { jsession, action, params } = await req.json();
 
-    if (!jsession || !action) {
-      throw new Error('Session token and action required');
+    if (!jsession) {
+      throw new Error('CMSV6 session token required');
     }
 
     const CMSV6_API_URL = Deno.env.get('CMSV6_API_URL');
@@ -42,14 +42,53 @@ serve(async (req) => {
 
     console.log(`[CMSV6] Safety business action: ${action}`);
 
-    let endpoint = '';
+    let apiUrl = '';
     const queryParams = new URLSearchParams();
     queryParams.append('jsession', jsession);
 
     switch (action) {
-      case 'querySafetyAlarm':
-        endpoint = '/StandardApiAction_querySafetyAlarm.action';
-        if (params.deviceId) queryParams.append('deviceId', params.deviceId);
+      case 'securityEvidence':
+        apiUrl = `${CMSV6_API_URL}/StandardApiAction_performanceReportPhotoListSafe.action`;
+        if (params.vehiIdno) queryParams.append('vehiIdno', params.vehiIdno);
+        if (params.begintime) queryParams.append('begintime', params.begintime);
+        if (params.endtime) queryParams.append('endtime', params.endtime);
+        if (params.alarmType) queryParams.append('alarmType', params.alarmType);
+        if (params.mediaType !== undefined) queryParams.append('mediaType', params.mediaType);
+        if (params.toMap) queryParams.append('toMap', params.toMap);
+        if (params.currentPage) queryParams.append('currentPage', params.currentPage);
+        if (params.pageRecords) queryParams.append('pageRecords', params.pageRecords);
+        break;
+
+      case 'evidenceQuery':
+        apiUrl = `${CMSV6_API_URL}/StandardApiAction_alarmEvidence.action`;
+        if (params.devIdno) queryParams.append('devIdno', params.devIdno);
+        if (params.guid) queryParams.append('guid', params.guid);
+        if (params.alarmType) queryParams.append('alarmType', params.alarmType);
+        if (params.begintime) queryParams.append('begintime', params.begintime);
+        if (params.toMap) queryParams.append('toMap', params.toMap);
+        if (params.md5) queryParams.append('md5', params.md5);
+        break;
+
+      case 'resourceCatalogSummary':
+        apiUrl = `${CMSV6_API_URL}/StandardApiAction_resourceCatalogSummary.action`;
+        if (params.devIdno) queryParams.append('devIdno', params.devIdno);
+        if (params.begintime) queryParams.append('begintime', params.begintime);
+        if (params.endtime) queryParams.append('endtime', params.endtime);
+        break;
+
+      case 'resourceCatalogDetail':
+        apiUrl = `${CMSV6_API_URL}/StandardApiAction_resourceCatalogDetail.action`;
+        if (params.devIdno) queryParams.append('devIdno', params.devIdno);
+        if (params.begintime) queryParams.append('begintime', params.begintime);
+        if (params.endtime) queryParams.append('endtime', params.endtime);
+        if (params.currentPage) queryParams.append('currentPage', params.currentPage);
+        if (params.pageRecords) queryParams.append('pageRecords', params.pageRecords);
+        break;
+
+      case 'pictureQuery':
+        apiUrl = `${CMSV6_API_URL}/StandardApiAction_pictureQuery.action`;
+        if (params.devIdno) queryParams.append('devIdno', params.devIdno);
+        if (params.channel) queryParams.append('channel', params.channel);
         if (params.begintime) queryParams.append('begintime', params.begintime);
         if (params.endtime) queryParams.append('endtime', params.endtime);
         if (params.alarmType) queryParams.append('alarmType', params.alarmType);
@@ -57,36 +96,45 @@ serve(async (req) => {
         if (params.pageRecords) queryParams.append('pageRecords', params.pageRecords);
         break;
 
-      case 'querySafetyEvidence':
-        endpoint = '/StandardApiAction_querySafetyEvidence.action';
-        if (params.deviceId) queryParams.append('deviceId', params.deviceId);
+      case 'audioVideoQuery':
+        apiUrl = `${CMSV6_API_URL}/StandardApiAction_audioAndVideoQuery.action`;
+        if (params.devIdno) queryParams.append('devIdno', params.devIdno);
+        if (params.channel) queryParams.append('channel', params.channel);
         if (params.begintime) queryParams.append('begintime', params.begintime);
         if (params.endtime) queryParams.append('endtime', params.endtime);
+        if (params.alarmType) queryParams.append('alarmType', params.alarmType);
+        if (params.streamType) queryParams.append('streamType', params.streamType);
         if (params.currentPage) queryParams.append('currentPage', params.currentPage);
         if (params.pageRecords) queryParams.append('pageRecords', params.pageRecords);
         break;
 
-      case 'queryAlarmEvidence':
-        endpoint = '/StandardApiAction_queryAlarmEvidence.action';
-        if (params.alarmId) queryParams.append('alarmId', params.alarmId);
-        break;
-
       default:
-        throw new Error(`Unknown action: ${action}`);
+        throw new Error(`Unknown safety business action: ${action}`);
     }
 
-    const apiUrl = `${CMSV6_API_URL}${endpoint}?${queryParams.toString()}`;
-    const response = await fetch(apiUrl);
+    const response = await fetch(`${apiUrl}?${queryParams.toString()}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`CMSV6 API request failed: ${response.statusText}`);
+    }
+
     const data = await response.json();
 
     if (data.result !== 0) {
-      throw new Error(data.description || `Failed to ${action}`);
+      throw new Error(data.description || `Safety business ${action} failed`);
     }
+
+    console.log(`[CMSV6] Safety business ${action} completed successfully`);
 
     return new Response(
       JSON.stringify({
         success: true,
-        data: data
+        data: data,
       }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },

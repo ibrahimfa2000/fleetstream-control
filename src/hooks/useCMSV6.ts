@@ -268,14 +268,14 @@ export const useCMSV6Reports = () => {
 
   const getPassengerDetail = async (
     jsession: string,
-    deviceId: string,
+    plateNumber: string,
     begintime: string,
     endtime: string,
     currentPage?: number,
     pageRecords?: number
   ) => {
     return getReport(jsession, 'passengerDetail', {
-      deviceId,
+      vehiIdnos: plateNumber,
       begintime,
       endtime,
       currentPage,
@@ -283,5 +283,363 @@ export const useCMSV6Reports = () => {
     });
   };
 
-  return { getReport, getPeopleDetail, getPassengerDetail };
+  const getPassengerSummary = async (
+    jsession: string,
+    plateNumber: string,
+    begintime: string,
+    endtime: string,
+    currentPage?: number,
+    pageRecords?: number
+  ) => {
+    return getReport(jsession, 'passengerSummary', {
+      vehiIdnos: plateNumber,
+      begintime,
+      endtime,
+      currentPage,
+      pageRecords,
+    });
+  };
+
+  return { getReport, getPeopleDetail, getPassengerDetail, getPassengerSummary };
+};
+
+export const useCMSV6SIMManagement = () => {
+  const mergeSIM = async (jsession: string, params: any) => {
+    try {
+      const { data, error } = await supabase.functions.invoke('cmsv6-sim-management', {
+        body: { jsession, action: 'merge', params },
+      });
+
+      if (error) throw error;
+      return data;
+    } catch (err) {
+      console.error('CMSV6 merge SIM error:', err);
+      throw err;
+    }
+  };
+
+  const findSIM = async (jsession: string, id: string) => {
+    try {
+      const { data, error } = await supabase.functions.invoke('cmsv6-sim-management', {
+        body: { jsession, action: 'find', params: { id } },
+      });
+
+      if (error) throw error;
+      return data?.data?.sim || null;
+    } catch (err) {
+      console.error('CMSV6 find SIM error:', err);
+      throw err;
+    }
+  };
+
+  const deleteSIM = async (jsession: string, id: string) => {
+    try {
+      const { data, error } = await supabase.functions.invoke('cmsv6-sim-management', {
+        body: { jsession, action: 'delete', params: { id } },
+      });
+
+      if (error) throw error;
+      return data;
+    } catch (err) {
+      console.error('CMSV6 delete SIM error:', err);
+      throw err;
+    }
+  };
+
+  const listSIMs = async (jsession: string, currentPage?: number, pageRecords?: number) => {
+    try {
+      const { data, error } = await supabase.functions.invoke('cmsv6-sim-management', {
+        body: { jsession, action: 'list', params: { currentPage, pageRecords } },
+      });
+
+      if (error) throw error;
+      return data?.data || null;
+    } catch (err) {
+      console.error('CMSV6 list SIMs error:', err);
+      throw err;
+    }
+  };
+
+  const unbindSIM = async (jsession: string, id: string, flag?: number) => {
+    try {
+      const { data, error } = await supabase.functions.invoke('cmsv6-sim-management', {
+        body: { jsession, action: 'unbind', params: { id, flag } },
+      });
+
+      if (error) throw error;
+      return data;
+    } catch (err) {
+      console.error('CMSV6 unbind SIM error:', err);
+      throw err;
+    }
+  };
+
+  return { mergeSIM, findSIM, deleteSIM, listSIMs, unbindSIM };
+};
+
+export const useCMSV6AreaManagement = () => {
+  const listAreas = async (jsession: string) => {
+    try {
+      const { data, error } = await supabase.functions.invoke('cmsv6-area-management', {
+        body: { jsession, action: 'list', params: {} },
+      });
+      if (error) throw error;
+      return data?.data || null;
+    } catch (err) {
+      console.error('CMSV6 list areas error:', err);
+      throw err;
+    }
+  };
+
+  const addArea = async (jsession: string, params: any) => {
+    try {
+      const { data, error } = await supabase.functions.invoke('cmsv6-area-management', {
+        body: { jsession, action: 'add', params },
+      });
+      if (error) throw error;
+      return data;
+    } catch (err) {
+      console.error('CMSV6 add area error:', err);
+      throw err;
+    }
+  };
+
+  const modifyArea = async (jsession: string, params: any) => {
+    try {
+      const { data, error } = await supabase.functions.invoke('cmsv6-area-management', {
+        body: { jsession, action: 'modify', params },
+      });
+      if (error) throw error;
+      return data;
+    } catch (err) {
+      console.error('CMSV6 modify area error:', err);
+      throw err;
+    }
+  };
+
+  const viewArea = async (jsession: string, id: string) => {
+    try {
+      const { data, error } = await supabase.functions.invoke('cmsv6-area-management', {
+        body: { jsession, action: 'view', params: { id } },
+      });
+      if (error) throw error;
+      return data?.data || null;
+    } catch (err) {
+      console.error('CMSV6 view area error:', err);
+      throw err;
+    }
+  };
+
+  const deleteArea = async (jsession: string, id: string) => {
+    try {
+      const { data, error } = await supabase.functions.invoke('cmsv6-area-management', {
+        body: { jsession, action: 'delete', params: { id } },
+      });
+      if (error) throw error;
+      return data;
+    } catch (err) {
+      console.error('CMSV6 delete area error:', err);
+      throw err;
+    }
+  };
+
+  return { listAreas, addArea, modifyArea, viewArea, deleteArea };
+};
+
+export const useCMSV6DriverManagement = () => {
+  const listDrivers = async (jsession: string, currentPage?: number, pageRecords?: number) => {
+    try {
+      const { data, error } = await supabase.functions.invoke('cmsv6-driver-management', {
+        body: { jsession, action: 'list', params: { currentPage, pageRecords } },
+      });
+      if (error) throw error;
+      return data?.data || null;
+    } catch (err) {
+      console.error('CMSV6 list drivers error:', err);
+      throw err;
+    }
+  };
+
+  const addDriver = async (jsession: string, params: any) => {
+    try {
+      const { data, error } = await supabase.functions.invoke('cmsv6-driver-management', {
+        body: { jsession, action: 'add', params },
+      });
+      if (error) throw error;
+      return data;
+    } catch (err) {
+      console.error('CMSV6 add driver error:', err);
+      throw err;
+    }
+  };
+
+  const modifyDriver = async (jsession: string, params: any) => {
+    try {
+      const { data, error } = await supabase.functions.invoke('cmsv6-driver-management', {
+        body: { jsession, action: 'modify', params },
+      });
+      if (error) throw error;
+      return data;
+    } catch (err) {
+      console.error('CMSV6 modify driver error:', err);
+      throw err;
+    }
+  };
+
+  const findDriver = async (jsession: string, id: string) => {
+    try {
+      const { data, error } = await supabase.functions.invoke('cmsv6-driver-management', {
+        body: { jsession, action: 'find', params: { id } },
+      });
+      if (error) throw error;
+      return data?.data || null;
+    } catch (err) {
+      console.error('CMSV6 find driver error:', err);
+      throw err;
+    }
+  };
+
+  const deleteDriver = async (jsession: string, id: string) => {
+    try {
+      const { data, error } = await supabase.functions.invoke('cmsv6-driver-management', {
+        body: { jsession, action: 'delete', params: { id } },
+      });
+      if (error) throw error;
+      return data;
+    } catch (err) {
+      console.error('CMSV6 delete driver error:', err);
+      throw err;
+    }
+  };
+
+  const queryDriverByDevice = async (jsession: string, devIdno: string) => {
+    try {
+      const { data, error } = await supabase.functions.invoke('cmsv6-driver-management', {
+        body: { jsession, action: 'queryByDevice', params: { devIdno } },
+      });
+      if (error) throw error;
+      return data?.data || null;
+    } catch (err) {
+      console.error('CMSV6 query driver by device error:', err);
+      throw err;
+    }
+  };
+
+  return { listDrivers, addDriver, modifyDriver, findDriver, deleteDriver, queryDriverByDevice };
+};
+
+export const useCMSV6TrafficCard = () => {
+  const getFlowInfo = async (jsession: string, devIdno: string) => {
+    try {
+      const { data, error } = await supabase.functions.invoke('cmsv6-traffic-card', {
+        body: { jsession, action: 'getInfo', params: { devIdno } },
+      });
+      if (error) throw error;
+      return data?.data || null;
+    } catch (err) {
+      console.error('CMSV6 get flow info error:', err);
+      throw err;
+    }
+  };
+
+  const saveFlowConfig = async (jsession: string, params: any) => {
+    try {
+      const { data, error } = await supabase.functions.invoke('cmsv6-traffic-card', {
+        body: { jsession, action: 'saveConfig', params },
+      });
+      if (error) throw error;
+      return data;
+    } catch (err) {
+      console.error('CMSV6 save flow config error:', err);
+      throw err;
+    }
+  };
+
+  return { getFlowInfo, saveFlowConfig };
+};
+
+export const useCMSV6SafetyBusiness = () => {
+  const getSecurityEvidence = async (jsession: string, params: any) => {
+    try {
+      const { data, error } = await supabase.functions.invoke('cmsv6-safety-business', {
+        body: { jsession, action: 'securityEvidence', params },
+      });
+      if (error) throw error;
+      return data?.data || null;
+    } catch (err) {
+      console.error('CMSV6 security evidence error:', err);
+      throw err;
+    }
+  };
+
+  const queryEvidence = async (jsession: string, params: any) => {
+    try {
+      const { data, error } = await supabase.functions.invoke('cmsv6-safety-business', {
+        body: { jsession, action: 'evidenceQuery', params },
+      });
+      if (error) throw error;
+      return data?.data || null;
+    } catch (err) {
+      console.error('CMSV6 evidence query error:', err);
+      throw err;
+    }
+  };
+
+  const getResourceCatalogSummary = async (jsession: string, params: any) => {
+    try {
+      const { data, error } = await supabase.functions.invoke('cmsv6-safety-business', {
+        body: { jsession, action: 'resourceCatalogSummary', params },
+      });
+      if (error) throw error;
+      return data?.data || null;
+    } catch (err) {
+      console.error('CMSV6 resource catalog summary error:', err);
+      throw err;
+    }
+  };
+
+  const queryPictures = async (jsession: string, params: any) => {
+    try {
+      const { data, error } = await supabase.functions.invoke('cmsv6-safety-business', {
+        body: { jsession, action: 'pictureQuery', params },
+      });
+      if (error) throw error;
+      return data?.data || null;
+    } catch (err) {
+      console.error('CMSV6 picture query error:', err);
+      throw err;
+    }
+  };
+
+  const queryAudioVideo = async (jsession: string, params: any) => {
+    try {
+      const { data, error } = await supabase.functions.invoke('cmsv6-safety-business', {
+        body: { jsession, action: 'audioVideoQuery', params },
+      });
+      if (error) throw error;
+      return data?.data || null;
+    } catch (err) {
+      console.error('CMSV6 audio/video query error:', err);
+      throw err;
+    }
+  };
+
+  return { getSecurityEvidence, queryEvidence, getResourceCatalogSummary, queryPictures, queryAudioVideo };
+};
+
+export const useCMSV6DeviceOnline = () => {
+  const getDeviceOnlineStatus = async (jsession: string, devIdno?: string, vehiIdno?: string, status?: number) => {
+    try {
+      const { data, error } = await supabase.functions.invoke('cmsv6-device-online', {
+        body: { jsession, devIdno, vehiIdno, status },
+      });
+      if (error) throw error;
+      return data?.onlines || [];
+    } catch (err) {
+      console.error('CMSV6 device online status error:', err);
+      throw err;
+    }
+  };
+
+  return { getDeviceOnlineStatus };
 };

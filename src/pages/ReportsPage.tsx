@@ -5,14 +5,19 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { toast } from "sonner";
-import { FileText, Download, Calendar, TrendingUp } from "lucide-react";
+import { FileText, Download, Calendar, TrendingUp, Users } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { useCMSV6Session } from "@/hooks/useCMSV6";
+import { useCMSV6Session, useCMSV6Reports } from "@/hooks/useCMSV6";
 
 const ReportsPage = () => {
   const { jsession } = useCMSV6Session();
+  const { getPassengerSummary, getPassengerDetail } = useCMSV6Reports();
   const [loading, setLoading] = useState(false);
+  const [passengerSummaryData, setPassengerSummaryData] = useState<any[]>([]);
+  const [passengerDetailData, setPassengerDetailData] = useState<any[]>([]);
   const [reportParams, setReportParams] = useState({
     reportType: "mileage",
     deviceId: "",
@@ -105,6 +110,66 @@ const ReportsPage = () => {
     }
   };
 
+  const handlePassengerSummary = async () => {
+    if (!jsession) {
+      toast.error("CMSV6 session not available");
+      return;
+    }
+
+    if (!reportParams.deviceId || !reportParams.startDate || !reportParams.endDate) {
+      toast.error("Please fill in all required fields");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const data = await getPassengerSummary(
+        jsession,
+        reportParams.deviceId,
+        reportParams.startDate + " 00:00:00",
+        reportParams.endDate + " 23:59:59",
+        1,
+        10
+      );
+      setPassengerSummaryData(data?.infos || []);
+      toast.success("Passenger summary retrieved successfully");
+    } catch (error: any) {
+      toast.error("Failed to retrieve passenger summary: " + error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handlePassengerDetail = async () => {
+    if (!jsession) {
+      toast.error("CMSV6 session not available");
+      return;
+    }
+
+    if (!reportParams.deviceId || !reportParams.startDate || !reportParams.endDate) {
+      toast.error("Please fill in all required fields");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const data = await getPassengerDetail(
+        jsession,
+        reportParams.deviceId,
+        reportParams.startDate + " 00:00:00",
+        reportParams.endDate + " 23:59:59",
+        1,
+        10
+      );
+      setPassengerDetailData(data?.infos || []);
+      toast.success("Passenger details retrieved successfully");
+    } catch (error: any) {
+      toast.error("Failed to retrieve passenger details: " + error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-dark">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_30%,rgba(213,175,55,0.08),transparent_60%)]" />
@@ -119,7 +184,14 @@ const ReportsPage = () => {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <Tabs defaultValue="reports" className="w-full">
+            <TabsList className="grid w-full grid-cols-2 mb-6">
+              <TabsTrigger value="reports">Reports & Analytics</TabsTrigger>
+              <TabsTrigger value="passengers">Passenger Reports</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="reports">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <Card className="bg-card/50 backdrop-blur-sm">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -249,6 +321,147 @@ const ReportsPage = () => {
               </CardContent>
             </Card>
           </div>
+        </TabsContent>
+
+        <TabsContent value="passengers">
+          <div className="space-y-6">
+            <Card className="bg-card/50 backdrop-blur-sm">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Users className="w-5 h-5" />
+                  Passenger Reports
+                </CardTitle>
+                <CardDescription>View passenger boarding and alighting statistics</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="plateNumber">Plate Number / Vehicle ID</Label>
+                  <Input
+                    id="plateNumber"
+                    value={reportParams.deviceId}
+                    onChange={(e) => setReportParams({ ...reportParams, deviceId: e.target.value })}
+                    placeholder="Enter plate number (e.g., 50000000000)"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="passengerStartDate">Start Date</Label>
+                    <Input
+                      id="passengerStartDate"
+                      type="date"
+                      value={reportParams.startDate}
+                      onChange={(e) => setReportParams({ ...reportParams, startDate: e.target.value })}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="passengerEndDate">End Date</Label>
+                    <Input
+                      id="passengerEndDate"
+                      type="date"
+                      value={reportParams.endDate}
+                      onChange={(e) => setReportParams({ ...reportParams, endDate: e.target.value })}
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <Button onClick={handlePassengerSummary} disabled={loading || !jsession} className="w-full">
+                    <TrendingUp className="w-4 h-4 mr-2" />
+                    Get Summary
+                  </Button>
+                  <Button onClick={handlePassengerDetail} disabled={loading || !jsession} className="w-full" variant="outline">
+                    <FileText className="w-4 h-4 mr-2" />
+                    Get Details
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            {passengerSummaryData.length > 0 && (
+              <Card className="bg-card/50 backdrop-blur-sm">
+                <CardHeader>
+                  <CardTitle>Passenger Summary</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Plate Number</TableHead>
+                        <TableHead>Company</TableHead>
+                        <TableHead>Start Time</TableHead>
+                        <TableHead>End Time</TableHead>
+                        <TableHead>Total Boarding</TableHead>
+                        <TableHead>Total Alighting</TableHead>
+                        <TableHead>Net Change</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {passengerSummaryData.map((row, index) => (
+                        <TableRow key={index}>
+                          <TableCell className="font-medium">{row.vehiIdno}</TableCell>
+                          <TableCell>{row.companyName}</TableCell>
+                          <TableCell>{row.startTimeStr}</TableCell>
+                          <TableCell>{row.endTimeStr}</TableCell>
+                          <TableCell>{row.upPeople}</TableCell>
+                          <TableCell>{row.downPeople}</TableCell>
+                          <TableCell>{row.incrPeople}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </CardContent>
+              </Card>
+            )}
+
+            {passengerDetailData.length > 0 && (
+              <Card className="bg-card/50 backdrop-blur-sm">
+                <CardHeader>
+                  <CardTitle>Passenger Details</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Plate Number</TableHead>
+                        <TableHead>Time</TableHead>
+                        <TableHead>Location</TableHead>
+                        <TableHead>Current Passengers</TableHead>
+                        <TableHead>Front Door</TableHead>
+                        <TableHead>Back Door</TableHead>
+                        <TableHead>Middle Door</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {passengerDetailData.map((row, index) => (
+                        <TableRow key={index}>
+                          <TableCell className="font-medium">{row.vehiIdno}</TableCell>
+                          <TableCell>{row.bTimeStr}</TableCell>
+                          <TableCell className="text-xs">{row.startPosition}</TableCell>
+                          <TableCell>{row.curPeople}</TableCell>
+                          <TableCell>
+                            <div className="text-xs">
+                              <div>↑{row.upPeople1 || 0} ↓{row.downPeople1 || 0}</div>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="text-xs">
+                              <div>↑{row.upPeople2 || 0} ↓{row.downPeople2 || 0}</div>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="text-xs">
+                              <div>↑{row.upPeople3 || 0} ↓{row.downPeople3 || 0}</div>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+        </TabsContent>
+      </Tabs>
         </main>
       </div>
     </div>

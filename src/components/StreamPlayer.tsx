@@ -124,7 +124,6 @@ const StreamPlayer = ({ streamUrl, streamType }: StreamPlayerProps) => {
         <video
           ref={videoRef}
           className="w-full h-full"
-          type="application/x-mpegURL"
           controls
           playsInline
           onPlay={() => setIsPlaying(true)}
