@@ -4,13 +4,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Video, ExternalLink, Car, MapPin } from "lucide-react";
+import { Video, ExternalLink, Car, MapPin, ArrowLeft } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useMemo } from "react";
 import HLSPlayer from "@/components/CMSV6Player";
 import CMSV6Player from "@/components/CMSV6Player";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import Navbar from "@/components/Navbar";
 
 const VehicleDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -76,6 +77,14 @@ const VehicleDetail = () => {
   }
 
   return (
+       <div className="min-h-screen bg-gradient-dark">
+      <Navbar />
+      <main className="container mx-auto px-4 py-8">
+        <Button variant="ghost" onClick={() => navigate("/dashboard")} className="mb-6 gap-2">
+          <ArrowLeft className="w-4 h-4" /> Back
+        </Button>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
     <Card className="p-6">
       <CardHeader className="flex justify-between items-center">
         <CardTitle className="text-2xl">{vehicle.nm}</CardTitle>
@@ -134,6 +143,9 @@ const VehicleDetail = () => {
         </Tabs>
       </CardContent>
     </Card>
+    </div>
+      </main>
+    </div>
   );
 };
 
