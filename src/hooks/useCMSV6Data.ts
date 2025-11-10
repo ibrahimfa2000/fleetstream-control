@@ -13,6 +13,21 @@ export const useCMSV6Login = () => {
   });
 };
 
+export const useCMSV6Live = (plate: string) => {
+  return useQuery({
+    queryKey: ["cmsv6-livecam", plate],
+    queryFn: async () => {
+      const { data, error } = await supabase.functions.invoke("clever-task", {
+        body: { plate }, // 👈 pass variables here
+      });
+
+      if (error) throw error;
+      return data;
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+};
+
 export const useCMSV6Vehicles = () => {
   return useQuery({
     queryKey: ["cmsv6-vehicles"],
