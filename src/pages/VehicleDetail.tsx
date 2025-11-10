@@ -20,46 +20,51 @@ const VehicleDetail = () => {
   const { data: vehiclesData, isLoading: loadingVehicles } = useCMSV6Vehicles();
   const { data: locationsData, isLoading: loadingLocations } = useCMSV6Locations();
   const { data: videoData, isLoading: loadingVideos } = useCMSV6Videos();
-const { data: LiveHTML, isLoading: loadingVideoslive } = useCMSV6Live('0045600');
-
+  const { data: LiveHTML, isLoading: loadingVideoslive } = useCMSV6Live("0045600");
 
   const vehicle = useMemo(() => {
-    return vehiclesData?.vehicles?.find((v: any) => v.dl?.[0]?.id?.toString() === id || v.id?.toString() === id || v.nm === id);
+    return vehiclesData?.vehicles?.find(
+      (v: any) =>
+        v.dl?.[0]?.id?.toString() === id ||
+        v.id?.toString() === id ||
+        v.nm === id
+    );
   }, [vehiclesData, id]);
 
   const location = useMemo(() => {
-    return locationsData?.locations?.find((l: any) => l.id?.toString() === vehicle?.dl?.[0]?.id?.toString());
+    return locationsData?.locations?.find(
+      (l: any) => l.id?.toString() === vehicle?.dl?.[0]?.id?.toString()
+    );
   }, [locationsData, vehicle]);
 
   const streams = useMemo(() => {
-    return videoData?.streams?.filter((s: any) => s.deviceId?.toString() === vehicle?.dl?.[0]?.id?.toString()) || [];
+    return (
+      videoData?.streams?.filter(
+        (s: any) => s.deviceId?.toString() === vehicle?.dl?.[0]?.id?.toString()
+      ) || []
+    );
   }, [videoData, vehicle]);
 
-  const openVideoStream = (url: string) => window.open(url, "_blank", "width=1200,height=800");
+  const openVideoStream = (url: string) =>
+    window.open(url, "_blank", "width=1200,height=800");
 
-  if (loadingVehicles || loadingLocations || loadingVideos)
+  // ✅ Move this before any conditional return
+  useEffect(() => {
+    if (LiveHTML?.html) {
+      setPlayerHtml(LiveHTML.html);
+    }
+  }, [LiveHTML]);
+
+  // ✅ Conditional rendering comes after hooks
+  if (loadingVehicles || loadingLocations || loadingVideos) {
     return (
       <div className="p-8">
         <Skeleton className="w-full h-[400px]" />
       </div>
     );
+  }
 
-
-  useEffect(() => {
-    const fetchPlayer = async () => {
-      if (!vehicle?.nm) return;
-      console.log("LiveHTML", LiveHTML.html)
-       
-       if(LiveHTML){
-         setPlayerHtml(LiveHTML.html);
-      }
-    };
-
-    fetchPlayer();
-  }, [LiveHTML]);
-
-
-  if (!vehicle)
+  if (!vehicle) {
     return (
       <div className="p-8 text-center">
         <p className="text-muted-foreground">Vehicle not found</p>
@@ -68,12 +73,16 @@ const { data: LiveHTML, isLoading: loadingVideoslive } = useCMSV6Live('0045600')
         </Button>
       </div>
     );
+  }
 
   return (
     <Card className="p-6">
       <CardHeader className="flex justify-between items-center">
         <CardTitle className="text-2xl">{vehicle.nm}</CardTitle>
-        <Badge variant="outline" className={location?.ol === 1 ? "text-success" : "text-destructive"}>
+        <Badge
+          variant="outline"
+          className={location?.ol === 1 ? "text-success" : "text-destructive"}
+        >
           {location?.ol === 1 ? "Online" : "Offline"}
         </Badge>
       </CardHeader>
@@ -86,7 +95,6 @@ const { data: LiveHTML, isLoading: loadingVideoslive } = useCMSV6Live('0045600')
             <TabsTrigger value="stream">Live Stream</TabsTrigger>
           </TabsList>
 
-          {/* Overview */}
           <TabsContent value="overview" className="mt-6 grid grid-cols-2 gap-4">
             <Info label="Plate Number" value={vehicle.nm} />
             <Info label="Company" value={vehicle.pnm} />
@@ -94,27 +102,28 @@ const { data: LiveHTML, isLoading: loadingVideoslive } = useCMSV6Live('0045600')
             <Info label="Channels" value={vehicle.chnName} />
           </TabsContent>
 
-          {/* Telemetry */}
           <TabsContent value="telemetry" className="mt-6 grid grid-cols-2 gap-4">
             <Info label="Speed" value={`${location?.sp ?? 0} km/h`} />
             <Info label="Signal" value={location?.net === 3 ? "4G" : "Unknown"} />
             <Info label="Battery" value={`${location?.bat ?? "-"}%`} />
-            <Info label="Coordinates" value={`${location?.mlat}, ${location?.mlng}`} />
+            <Info
+              label="Coordinates"
+              value={`${location?.mlat}, ${location?.mlng}`}
+            />
             <div className="col-span-2 flex items-center gap-2 mt-2 text-sm text-muted-foreground">
               <MapPin className="w-4 h-4" />
               {location?.ps}
             </div>
           </TabsContent>
 
-          {/* Live Stream */}
           <TabsContent value="stream" className="mt-6">
             {playerHtml ? (
               <iframe
-  src="http://57.131.13.157/808gps/open/player/RealPlayVideo.html?account=admin&password=!ApexAuto2025!&PlateNum=0045600&lang=en"
-  width="100%"
-  height="600"
-  allow="autoplay"
-></iframe>
+                src="http://57.131.13.157/808gps/open/player/RealPlayVideo.html?account=admin&password=!ApexAuto2025!&PlateNum=0045600&lang=en"
+                width="100%"
+                height="600"
+                allow="autoplay"
+              ></iframe>
             ) : (
               <div className="text-center py-12 text-muted-foreground">
                 <Video className="w-16 h-16 mx-auto mb-2 opacity-50" />
@@ -127,6 +136,7 @@ const { data: LiveHTML, isLoading: loadingVideoslive } = useCMSV6Live('0045600')
     </Card>
   );
 };
+
 
 const Info = ({ label, value }: { label: string; value: any }) => (
   <div>
