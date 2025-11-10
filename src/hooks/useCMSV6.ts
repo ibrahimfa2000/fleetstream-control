@@ -113,11 +113,7 @@ export const useCMSV6Vehicles = (jsession: string | null) => {
       if (fetchError) throw fetchError;
 
       setVehicles(data?.data?.vehicles || []);
-      getGPSDetails(jsession, data?.data?.vehicles[0]?.dl?.[0]?.id || '').then(gpsData => {
-        console.log('Fetched GPS details for first vehicle:', gpsData);
-        setGPSData(gpsData || []);
-      })
-
+  
     } catch (err) {
       console.error('CMSV6 vehicles fetch error:', err);
       setError(err instanceof Error ? err.message : 'Failed to fetch vehicles');

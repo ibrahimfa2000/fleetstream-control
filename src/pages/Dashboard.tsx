@@ -10,6 +10,10 @@ import { Plus, Search, RefreshCcw } from "lucide-react";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { useCMSV6Session, useCMSV6Vehicles } from "@/hooks/useCMSV6";
+import { ConnectionStatus } from "@/components/ConnectionStatus";
+import { DashboardStats } from "@/components/DashboardStats";
+import { VehicleList } from "@/components/VehicleList";
+import { AlertsPanel } from "@/components/AlertsPanel";
 
 const Dashboard = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -19,7 +23,6 @@ const Dashboard = () => {
   
   // CMSV6 integration
   const { jsession, isLoading: sessionLoading, error: sessionError, refreshSession } = useCMSV6Session();
-  const { vehicles: cmsv6Vehicles, GPSData ,isLoading: vehiclesLoading, refetch: refetchVehicles } = useCMSV6Vehicles(jsession);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -44,71 +47,21 @@ const Dashboard = () => {
     return () => subscription.unsubscribe();
   }, [navigate]);
 
-  const syncCMSV6Data = async () => {
-    if (!jsession) {
-      toast.error("CMSV6 session not available. Refreshing...");
-      refreshSession();
-      return;
-    }
-    
-    try {
-      await refetchVehicles();
-      toast.success("CMSV6 data synced successfully");
-    } catch (error: any) {
-      toast.error("Failed to sync CMSV6 data: " + error.message);
-    }
-  };
 
-  const vehicles = cmsv6Vehicles || [];
-  
-  const filteredVehicles = vehicles.filter(
-    (vehicle) =>
-      (vehicle.nm?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-       vehicle.dl?.[0]?.id?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-       vehicle.dl?.[0]?.sim?.toLowerCase().includes(searchQuery.toLowerCase()))
-  );
 
-  if (sessionLoading || vehiclesLoading) {
-    return (
-      <div className="min-h-screen bg-gradient-dark">
-        <Navbar />
-        <div className="container mx-auto px-4 py-8 flex items-center justify-center">
-          <p className="text-muted-foreground">Loading devices from CMSV6...</p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-gradient-dark">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_30%,rgba(213,175,55,0.08),transparent_60%)]" />
       <div className="relative">
         <Navbar />
+        
+
         <main className="container mx-auto px-4 py-8">
           <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between mb-8">
-            <div>
-              <h2 className="text-3xl font-bold mb-2 text-foreground">{t('dashboard.title')}</h2>
-              <p className="text-muted-foreground">
-                {t('dashboard.subtitle')}
-              </p>
-              {jsession && (
-                <p className="text-xs text-success mt-1">✓ CMSV6 Connected</p>
-              )}
-              {sessionError && (
-                <p className="text-xs text-destructive mt-1">⚠ CMSV6 Error: {sessionError}</p>
-              )}
-            </div>
+        
             <div className="flex gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={syncCMSV6Data}
-                disabled={!jsession || vehiclesLoading}
-                className="gap-2"
-              >
-                <RefreshCcw className={`w-4 h-4 ${vehiclesLoading ? 'animate-spin' : ''}`} />
-                Sync CMSV6
-              </Button>
+             
               <Button
                 onClick={() => navigate('/device-management')}
                 className="gap-2"
@@ -130,29 +83,29 @@ const Dashboard = () => {
               />
             </div>
           </div>
-
-          {filteredVehicles.length === 0 ? (
-            <div className="text-center py-16">
-              <p className="text-muted-foreground mb-4">
-                {searchQuery ? t('dashboard.noDevices') : 'No vehicles found in CMSV6'}
+<div className="space-y-6">
+               <div>
+              <h2 className="text-3xl font-bold mb-2 text-foreground">{t('dashboard.title')}</h2>
+              <p className="text-muted-foreground">
+                {t('dashboard.subtitle')}
               </p>
-              <Button onClick={() => navigate('/device-management')} className="gap-2">
-                <Plus className="w-4 h-4" />
-                Add Vehicle in CMSV6
-              </Button>
+              {jsession && (
+                <p className="text-xs text-success mt-1">✓ CMSV6 Connected</p>
+              )}
+              {sessionError && (
+                <p className="text-xs text-destructive mt-1">⚠ CMSV6 Error: {sessionError}</p>
+              )}
             </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredVehicles.map((vehicle, index) => (
-                <VehicleCard
-                  key={vehicle.dl?.[0]?.id || vehicle.id || index}
-                  vehicle={vehicle}
-                  telemntry={GPSData}
-                  onClick={() => navigate(`/vehicle/${vehicle.dl?.[0]?.id || vehicle.id}`, { state: { GPSData } })}
-                />
-              ))}
+      
+            <DashboardStats />
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <VehicleList />
+              <AlertsPanel />
             </div>
-          )}
+          </div>
+          
+           
+ 
         </main>
       </div>
     </div>

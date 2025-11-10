@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">ApexAuto</string>
+    <string name="title_activity_main">ApexAuto</string>
+    <string name="package_name">com.ApexAuto.apexstream</string>
+    <string name="custom_url_scheme">com.ApexAuto.apexstream</string>
+</resources>
