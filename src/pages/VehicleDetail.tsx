@@ -85,15 +85,36 @@ const VehicleDetail = () => {
         </Button>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-    <Card className="p-6">
-      <CardHeader className="flex justify-between items-center">
-        <CardTitle className="text-2xl">{vehicle.nm}</CardTitle>
-        <Badge
-          variant="outline"
-          className={location?.ol === 1 ? "text-success" : "text-destructive"}
-        >
-          {location?.ol === 1 ? "Online" : "Offline"}
-        </Badge>
+    <Card className="lg:col-span-3 bg-card/50 backdrop-blur-sm border-border/50">
+          <CardHeader>
+              <div className="flex justify-between items-start">
+                <div className="flex gap-3 items-center">
+                  <div className="w-12 h-12 rounded-lg bg-primary/20 flex items-center justify-center">
+                    <Car className="w-6 h-6 text-primary" />
+                  </div>
+                  <div>
+                    <CardTitle className="text-2xl">{vehicle.nm}</CardTitle>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Device ID: {vehicle.dl[0].id}
+                    </p>
+                    {<p className="text-xs text-success mt-1">✓ CMSV6 Connected</p>}
+                  </div>
+                </div>
+                <div className="flex flex-col items-end gap-2">
+                  <Badge
+                    variant="outline"
+                    className={
+                      location?.ol === 1 
+                        ? "bg-success/20 text-success border-success/30"
+                        : "bg-destructive/20 text-destructive border-destructive/30"
+                    }
+                  >
+                    {location?.ol === 1  ? "Online" : "Offline"}
+                  </Badge>
+
+                </div>
+              </div>
+           
       </CardHeader>
 
       <CardContent>
@@ -127,12 +148,14 @@ const VehicleDetail = () => {
 
           <TabsContent value="stream" className="mt-6">
             {playerHtml ? (
-              <iframe
-                src="https://prod.apex-view.org/808gps/open/player/RealPlayVideo.html?account=admin&password=!ApexAuto2025!&PlateNum=0045600&lang=en"
-                width="100%"
-                height="600"
-                allow="autoplay"
-              ></iframe>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <iframe
+                  src="https://prod.apex-view.org/808gps/open/player/RealPlayVideo.html?account=admin&password=!ApexAuto2025!&PlateNum=0045600&lang=en"
+                  width="100%"
+                  height="600"
+                  allow="autoplay"
+                ></iframe>
+              </div>
             ) : (
               <div className="text-center py-12 text-muted-foreground">
                 <Video className="w-16 h-16 mx-auto mb-2 opacity-50" />

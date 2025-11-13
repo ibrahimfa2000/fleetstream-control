@@ -5,9 +5,9 @@
     "signOut": "Sign Out"
   },
   "auth": {
-    "title": "ApexAuto",
+    "title": "ApexCam",
     "signInSubtitle": "Sign in to your MDVR Management Platform",
-    "signUpSubtitle": "Create your ApexAuto account",
+    "signUpSubtitle": "Create your ApexCam account",
     "email": "Email",
     "emailPlaceholder": "you@example.com",
     "password": "Password",
@@ -20,12 +20,12 @@
     "checkEmail": "Check your email for the confirmation link!"
   },
   "dashboard": {
-    "title": "ApexAuto Device Management",
+    "title": "ApexCam Device Management",
     "subtitle": "Monitor and manage your MDVR devices",
     "searchPlaceholder": "Search devices by IMEI or name...",
     "addDevice": "Add Device",
     "noDevices": "No devices found",
-    "noDevicesDesc": "Get started by adding your first ApexAuto device",
+    "noDevicesDesc": "Get started by adding your first ApexCam device",
     "syncCMSV6": "Sync CMSV6",
     "cmsv6Connected": "CMSV6 Connected",
     "cmsv6Error": "CMSV6 Error"

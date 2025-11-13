@@ -40,17 +40,17 @@ export function DeviceMap({ lat, lon, deviceName }: DeviceMapProps) {
       // Add OpenStreetMap tiles
       const baseLayers = {
         "Satellite": L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", {
-    attribution: "ApexAuto © maps",
+    attribution: "ApexCam © maps",
     maxZoom: 18,
   }),
   "Topo": L.tileLayer("https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png", {
     maxZoom: 17,
-    attribution: "ApexAuto © maps",
+    attribution: "ApexCam © maps",
   }),
   
   "OSM": L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
     maxZoom: 19,
-    attribution: "ApexAuto © maps",
+    attribution: "ApexCam © maps",
   }),
 }
 

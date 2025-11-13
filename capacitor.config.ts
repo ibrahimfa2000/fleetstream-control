@@ -1,8 +1,8 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.ApexAuto.apexstream',
-  appName: 'ApexAuto',
+  appId: 'com.ApexCam.apexstream',
+  appName: 'ApexCam',
   webDir: 'dist'
 };
 

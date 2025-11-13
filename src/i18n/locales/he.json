@@ -95,9 +95,9 @@
       "visitUs": "בקר אותנו"
   },
   "auth": {
-    "title": "ApexAuto",
+    "title": "ApexCam",
     "signInSubtitle": "התחבר לפלטפורמת ניהול MDVR שלך",
-    "signUpSubtitle": "צור חשבון ApexAuto שלך",
+    "signUpSubtitle": "צור חשבון ApexCam שלך",
     "email": "אימייל",
     "emailPlaceholder": "you@example.com",
     "password": "סיסמה",
@@ -110,12 +110,12 @@
     "checkEmail": "בדוק את האימייל שלך לקישור האישור!"
   },
   "dashboard": {
-    "title": "ניהול מכשירי ApexAuto",
+    "title": "ניהול מכשירי ApexCam",
     "subtitle": "עקוב ונהל את מכשירי ה-MDVR שלך",
     "searchPlaceholder": "חפש מכשירים לפי IMEI או שם...",
     "addDevice": "הוסף מכשיר",
     "noDevices": "לא נמצאו מכשירים",
-    "noDevicesDesc": "התחל על ידי הוספת מכשיר ApexAuto הראשון שלך"
+    "noDevicesDesc": "התחל על ידי הוספת מכשיר ApexCam הראשון שלך"
   },
   "admin": {
     "title": "לוח בקרה למנהל",

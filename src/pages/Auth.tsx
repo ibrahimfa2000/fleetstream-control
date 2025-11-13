@@ -70,7 +70,7 @@ const Auth = () => {
           <div className="flex items-center justify-center mb-4">
             <img 
               src="/logo.jpg" 
-              alt="ApexAuto Logo" 
+              alt="ApexCam Logo" 
               className="h-20 w-20 object-contain"
             />
           </div>
