@@ -128,7 +128,7 @@ const VehicleDetail = () => {
           <TabsContent value="stream" className="mt-6">
             {playerHtml ? (
               <iframe
-                src="http://57.131.13.157/808gps/open/player/RealPlayVideo.html?account=admin&password=!ApexAuto2025!&PlateNum=0045600&lang=en"
+                src="https://prod.apex-view.org/808gps/open/player/RealPlayVideo.html?account=admin&password=!ApexAuto2025!&PlateNum=0045600&lang=en"
                 width="100%"
                 height="600"
                 allow="autoplay"
