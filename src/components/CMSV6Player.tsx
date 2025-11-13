@@ -23,7 +23,7 @@ const CMSV6Player = ({ stream, width = 640, height = 360 }: CMSV6PlayerProps) =>
     }
 
     const script = document.createElement("script");
-    script.src = "https://apexautocms.duckdns.org/808gps/open/player/js/cmsv6player.min.js";
+    script.src = "https://prod.apex-view.org/808gps/open/player/js/cmsv6player.min.js";
     script.async = true;
     script.onload = () => setLoaded(true);
     document.body.appendChild(script);
