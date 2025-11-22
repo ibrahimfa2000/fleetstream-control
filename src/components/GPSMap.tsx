@@ -82,7 +82,7 @@ L.control.layers(baseLayers).addTo(map)
   }, [lat, lon, deviceName])
 
   return (
-    <div className="relative w-full h-[200px] rounded-lg overflow-hidden border border-border/50">
+    <div className="relative w-full h-[400px] rounded-lg overflow-hidden border border-border/50">
       <div ref={mapRef} className="w-full h-full" />
     </div>
   )

@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Video, ExternalLink, Car, MapPin, ArrowLeft } from "lucide-react";
+import { Video, ExternalLink, Car, MapPin, ArrowLeft, Signal, ParkingCircle } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useMemo } from "react";
 import HLSPlayer from "@/components/CMSV6Player";
@@ -12,12 +12,11 @@ import CMSV6Player from "@/components/CMSV6Player";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/components/Navbar";
+import { DeviceMap } from "@/components/GPSMap";
 
 const VehicleDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const [playerHtml, setPlayerHtml] = useState<string | null>(null);
-
   const { data: vehiclesData, isLoading: loadingVehicles } = useCMSV6Vehicles();
   const { data: locationsData, isLoading: loadingLocations } = useCMSV6Locations();
   const { data: videoData, isLoading: loadingVideos } = useCMSV6Videos();
@@ -49,12 +48,6 @@ const VehicleDetail = () => {
   const openVideoStream = (url: string) =>
     window.open(url, "_blank", "width=1200,height=800");
 
-  // ✅ Move this before any conditional return
-  useEffect(() => {
-    if (LiveHTML?.html) {
-      setPlayerHtml(LiveHTML.html);
-    }
-  }, [LiveHTML]);
 
   // ✅ Conditional rendering comes after hooks
   if (loadingVehicles || loadingLocations || loadingVideos) {
@@ -64,7 +57,15 @@ const VehicleDetail = () => {
       </div>
     );
   }
-
+const TelemetryItem = ({ icon: Icon, label, value }: any) => (
+  <div className="flex items-center gap-3 p-4 bg-secondary/30 rounded-lg">
+    <Icon className="w-5 h-5 text-primary" />
+    <div>
+      <p className="text-sm text-muted-foreground">{label}</p>
+      <p className="font-semibold">{value}</p>
+    </div>
+  </div>
+);
   if (!vehicle) {
     return (
       <div className="p-8 text-center">
@@ -122,7 +123,7 @@ const VehicleDetail = () => {
           <TabsList className="grid grid-cols-3 w-full">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="telemetry">Telemetry</TabsTrigger>
-            <TabsTrigger value="stream">Live Stream</TabsTrigger>
+            <TabsTrigger value="stream">Live Stream & Map</TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview" className="mt-6 grid grid-cols-2 gap-4">
@@ -147,14 +148,29 @@ const VehicleDetail = () => {
           </TabsContent>
 
           <TabsContent value="stream" className="mt-6">
-            {playerHtml ? (
+            {videoData && location ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                 {location.mlat && location.mlng && (
+                  <div>
+                    <MapPin className="w-5 h-5 text-primary mb-1" />
+                    <DeviceMap lat={location.mlat} lon={location.mlng} deviceName={vehicle.pnm} />
+                  </div>
+                )}
+                <div className="col-span-1">
                 <iframe
-                  src="https://prod.apex-view.org/808gps/open/player/RealPlayVideo.html?account=admin&password=!ApexAuto2025!&PlateNum=0045600&lang=en"
+                  src={videoData?.streams?.[0]?.liveUrl}
                   width="100%"
                   height="600"
                   allow="autoplay"
                 ></iframe>
+               <button
+                  onClick={() => openVideoStream(videoData?.streams?.[0]?.liveUrl)}
+                  className="mt-2 px-4 py-2 bg-primary text-white rounded-lg"
+                >
+                  <ExternalLink className="w-4 h-4 inline-block mr-2" />
+                  Video not working? Open in new window
+                </button>
+                </div>
               </div>
             ) : (
               <div className="text-center py-12 text-muted-foreground">
@@ -163,6 +179,7 @@ const VehicleDetail = () => {
               </div>
             )}
           </TabsContent>
+  
         </Tabs>
       </CardContent>
     </Card>
