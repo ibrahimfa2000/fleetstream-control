@@ -13,6 +13,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/components/Navbar";
 import { DeviceMap } from "@/components/GPSMap";
+import MultiChannelLivePlayer from "@/components/MultiChannelLivePlayer";
 
 const VehicleDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -157,6 +158,7 @@ const TelemetryItem = ({ icon: Icon, label, value }: any) => (
                   </div>
                 )}
                 <div className="col-span-1">
+                   <MultiChannelLivePlayer streams={videoData?.streams} />;
                 <iframe
                   src={videoData?.streams?.[0]?.liveUrl}
                   width="100%"
