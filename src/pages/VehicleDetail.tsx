@@ -22,6 +22,7 @@ const VehicleDetail = () => {
   const { data: locationsData, isLoading: loadingLocations } = useCMSV6Locations();
   const { data: videoData, isLoading: loadingVideos } = useCMSV6Videos();
   const { data: LiveHTML, isLoading: loadingVideoslive } = useCMSV6Live("0045600");
+  const [toggle, setToggle] = useState<boolean>(false);
 
   const vehicle = useMemo(() => {
     return vehiclesData?.vehicles?.find(
@@ -158,7 +159,14 @@ const TelemetryItem = ({ icon: Icon, label, value }: any) => (
                   </div>
                 )}
                 <div className="col-span-1">
-                   <MultiChannelLivePlayer streams={videoData?.streams} />;
+                  <button className="mb-2 px-4 py-2 bg-primary text-white rounded-lg"
+                    onClick={() => setToggle(!toggle)}
+                  >
+                    <ExternalLink className="w-4 h-4 inline-block mr-2" />
+                    toggle MultiChannel Player
+
+                  </button>
+                   {toggle? (<MultiChannelLivePlayer streams={videoData?.streams} />) : ""};
                 <iframe
                   src={videoData?.streams?.[0]?.liveUrl}
                   width="100%"
@@ -166,7 +174,7 @@ const TelemetryItem = ({ icon: Icon, label, value }: any) => (
                   allow="autoplay"
                 ></iframe>
                <button
-                  onClick={() => openVideoStream(videoData?.streams?.[0]?.liveUrl)}
+                  onClick={() => openVideoStream(videoData?.streams?.[0]?.liveHttpUrl)}
                   className="mt-2 px-4 py-2 bg-primary text-white rounded-lg"
                 >
                   <ExternalLink className="w-4 h-4 inline-block mr-2" />
