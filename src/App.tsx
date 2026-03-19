@@ -16,6 +16,8 @@ import SystemManagement from "./pages/SystemManagement";
 import ReportsPage from "./pages/ReportsPage";
 import RulesManagement from "./pages/RulesManagement";
 import DeviceManagementPage from "./pages/DeviceManagementPage";
+import TermsPage from "./pages/TermsPage";
+import PrivacyPage from "./pages/PrivacyPage";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 const queryClient = new QueryClient();
 
@@ -39,6 +41,8 @@ const App = () => (
           <Route path="/reports" element={<ReportsPage />} />
           <Route path="/rules-management" element={<RulesManagement />} />
           <Route path="/device-management" element={<DeviceManagementPage />} />
+          <Route path="/terms" element={<TermsPage />} />
+          <Route path="/privacy" element={<PrivacyPage />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

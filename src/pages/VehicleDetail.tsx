@@ -14,14 +14,13 @@ import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/components/Navbar";
 import { DeviceMap } from "@/components/GPSMap";
 import MultiChannelLivePlayer from "@/components/MultiChannelLivePlayer";
-
+import WebRtcStreamPlayer from "@/components/WebRtcStreamPlayer";
 const VehicleDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { data: vehiclesData, isLoading: loadingVehicles } = useCMSV6Vehicles();
   const { data: locationsData, isLoading: loadingLocations } = useCMSV6Locations();
   const { data: videoData, isLoading: loadingVideos } = useCMSV6Videos();
-  const { data: LiveHTML, isLoading: loadingVideoslive } = useCMSV6Live("0045600");
   const [toggle, setToggle] = useState<boolean>(false);
 
   const vehicle = useMemo(() => {
@@ -78,6 +77,7 @@ const TelemetryItem = ({ icon: Icon, label, value }: any) => (
       </div>
     );
   }
+        {console.log("Rendering WebRtcStreamPlayer with vehicle:", vehicle, "and streams:", streams)}
 
   return (
        <div className="min-h-screen bg-gradient-dark">
@@ -150,44 +150,43 @@ const TelemetryItem = ({ icon: Icon, label, value }: any) => (
           </TabsContent>
 
           <TabsContent value="stream" className="mt-6">
-            {videoData && location ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                 {location.mlat && location.mlng && (
-                  <div>
-                    <MapPin className="w-5 h-5 text-primary mb-1" />
-                    <DeviceMap lat={location.mlat} lon={location.mlng} deviceName={vehicle.pnm} />
-                  </div>
-                )}
-                <div className="col-span-1">
-                  <button className="mb-2 px-4 py-2 bg-primary text-white rounded-lg"
-                    onClick={() => setToggle(!toggle)}
-                  >
-                    <ExternalLink className="w-4 h-4 inline-block mr-2" />
-                    toggle MultiChannel Player
+             {videoData && location ? (
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      {location.mlat && location.mlng && (
+        <div>
+          <MapPin className="w-5 h-5 text-primary mb-1" />
+          <DeviceMap
+            lat={location.mlat}
+            lon={location.mlng}
+            deviceName={vehicle.pnm}
+          />
+        </div>
+      )}
 
-                  </button>
-                   {toggle? (<MultiChannelLivePlayer streams={videoData?.streams} />) : ""};
-                <iframe
-                  src={videoData?.streams?.[0]?.liveUrl}
-                  width="100%"
-                  height="600"
-                  allow="autoplay"
-                ></iframe>
-               <button
-                  onClick={() => openVideoStream(videoData?.streams?.[0]?.liveHttpUrl)}
-                  className="mt-2 px-4 py-2 bg-primary text-white rounded-lg"
-                >
-                  <ExternalLink className="w-4 h-4 inline-block mr-2" />
-                  Video not working? Open in new window
-                </button>
-                </div>
-              </div>
-            ) : (
-              <div className="text-center py-12 text-muted-foreground">
-                <Video className="w-16 h-16 mx-auto mb-2 opacity-50" />
-                <p>Loading secure live stream...</p>
-              </div>
-            )}
+      <div className="col-span-1 space-y-4">
+          <WebRtcStreamPlayer
+            deviceId={vehicle.dl[0].id.toString()}
+            deviceName={vehicle.nm}
+            channelCount={streams.length}
+            channelNames={streams.map((s: any) => s.channelName)}
+            isActive={true}
+            initialViewMode="grid"
+            initialChannel={0}
+            onError={(ch, err) => {
+              console.error("WebRTC error", ch, err);
+            }}
+            onStreamStart={(ch) => {
+              console.log("WebRTC stream started on channel", ch);
+            }}
+          />
+      </div>
+    </div>
+  ) : (
+    <div className="text-center py-12 text-muted-foreground">
+      <Video className="w-16 h-16 mx-auto mb-2 opacity-50" />
+      <p>Loading secure live stream...</p>
+    </div>
+  )}
           </TabsContent>
   
         </Tabs>
